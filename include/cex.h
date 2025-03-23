@@ -78,6 +78,7 @@ void char_string_free(CharString* s);
 
 #define min(a, b) ((a) <= (b) ? (a) : (b))
 #define max(a, b) ((a) >= (b) ? (a) : (b))
+#define clamp(lo, hi, val) ((lo) > (val) ? (lo) : (hi) < (val) ? (hi) : (val))
 
 /////////// Panic ///////////
 

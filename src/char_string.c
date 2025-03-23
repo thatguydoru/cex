@@ -61,6 +61,9 @@ int char_string_rfind(const CharString* s, const char pat[]) {
 }
 
 void char_string_to_buffer(const CharString* s, char out[], size_t size) {
+    if (size > s->size) {
+        panic("size too large");
+    }
     memcpy(out, s->items, size);
 }
 
