@@ -5,6 +5,45 @@
 #include <stdlib.h>
 #include <string.h>
 
+/////////// Maybe ///////////
+
+#define maybe(T)     \
+    struct {         \
+        bool exists; \
+        T value;     \
+    }
+
+#define Some(maybe_t, val)           \
+    (maybe_t) {                      \
+        .exists = true, .value = val \
+    }
+
+#define None(maybe_t)   \
+    (maybe_t) {         \
+        .exists = false \
+    }
+
+/////////// Result ///////////
+
+#define result(T, E) \
+    struct {         \
+        bool ok;     \
+        union {      \
+            T data;  \
+            E error; \
+        } value;     \
+    }
+
+#define Ok(result_t, val)             \
+    (result_t) {                      \
+        .ok = true, .value.data = val \
+    }
+
+#define Err(result_t, err)              \
+    (result_t) {                        \
+        .ok = false, .value.error = err \
+    }
+
 /////////// Dynamic Array ///////////
 
 #define dynarray(T)      \
@@ -62,6 +101,7 @@
 /////////// char String ///////////
 
 typedef dynarray(char) CharString;
+typedef maybe(size_t) MaybeIndex;
 
 CharString char_string_with_capacity(size_t capacity);
 CharString char_string_default(void);
@@ -69,8 +109,8 @@ CharString char_string_from_c_str(const char c_str[]);
 void char_string_concat_inplace(CharString* dest, const CharString* src);
 CharString char_string_concat(const CharString* a, const CharString* b);
 bool char_string_eq(const CharString* a, const CharString* b);
-int char_string_find(const CharString* s, const char pat[]);
-int char_string_rfind(const CharString* s, const char pat[]);
+MaybeIndex char_string_find(const CharString* s, const char pat[]);
+MaybeIndex char_string_rfind(const CharString* s, const char pat[]);
 void char_string_to_buffer(const CharString* s, char out[], size_t size);
 void char_string_free(CharString* s);
 

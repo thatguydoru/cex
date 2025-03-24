@@ -15,26 +15,31 @@ void test_equal(void) {
 
 void test_find(void) {
     CharString a = char_string_from_c_str("he3333llo");
-    int idx = char_string_find(&a, "ll");
-    assert(idx == 6);
+    MaybeIndex idx = char_string_find(&a, "ll");
+    assert(idx.exists);
+    assert(idx.value == 6);
 
     idx = char_string_find(&a, "bad");
-    assert(idx == -1);
+    assert(!idx.exists);
 }
 
 void test_rfind(void) {
     CharString a = char_string_from_c_str("hellolleh");
-    int idx = char_string_rfind(&a, "ll");
-    assert(idx == 5);
+    MaybeIndex idx = char_string_rfind(&a, "ll");
+    assert(idx.exists);
+    assert(idx.value == 5);
 
     idx = char_string_rfind(&a, "bad");
-    assert(idx == -1);
+    assert(!idx.exists);
 }
 
 int main(void) {
     test_equal();
     test_find();
     test_rfind();
+
+    // CharString a = char_string_from_c_str("hellolleh");
+    // fwrite(a.items, sizeof(char), a.size, stdout);
 
     return 0;
 }

@@ -39,26 +39,26 @@ bool char_string_eq(const CharString* a, const CharString* b) {
     return !strncmp(a->items, b->items, a->size);
 }
 
-int char_string_find(const CharString* s, const char pat[]) {
+MaybeIndex char_string_find(const CharString* s, const char pat[]) {
     size_t patlen = strlen(pat);
     for (size_t i = 0; i < s->size; i++) {
         if (!strncmp(&s->items[i], pat, patlen)) {
-            return i;
+            return Some(MaybeIndex, i);
         }
     }
 
-    return -1;
+    return None(MaybeIndex);
 }
 
-int char_string_rfind(const CharString* s, const char pat[]) {
+MaybeIndex char_string_rfind(const CharString* s, const char pat[]) {
     size_t patlen = strlen(pat);
     for (size_t i = s->size; i > 0; i--) {
         if (!strncmp(&s->items[i - 1], pat, patlen)) {
-            return i - 1;
+            return Some(MaybeIndex, i - 1);
         }
     }
 
-    return -1;
+    return None(MaybeIndex);
 }
 
 void char_string_to_buffer(const CharString* s, char out[], size_t size) {
