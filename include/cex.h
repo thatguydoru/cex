@@ -2,6 +2,7 @@
 #define __CEX_H__
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -22,6 +23,8 @@
     (maybe_t) {         \
         .exists = false \
     }
+
+typedef maybe(size_t) MaybeIndex;
 
 /////////// Result ///////////
 
@@ -101,7 +104,6 @@
 /////////// char String ///////////
 
 typedef dynarray(char) CharString;
-typedef maybe(size_t) MaybeIndex;
 
 CharString char_string_with_capacity(size_t capacity);
 CharString char_string_default(void);
@@ -122,6 +124,15 @@ void char_string_free(CharString* s);
 
 /////////// Panic ///////////
 
-void panic(const char* message);
+#define panic_fmt(fmt, ...)                                          \
+    {                                                                \
+        fprintf(                                                     \
+            stderr, "[PANIC] %s, line %d\n" fmt, __FILE__, __LINE__, \
+            __VA_ARGS__                                              \
+        );                                                           \
+        exit(-1);                                                    \
+    }
+
+#define panic(message) panic_fmt("%s\n", (message))
 
 #endif

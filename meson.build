@@ -2,7 +2,6 @@ project('cex', 'c', version : '0.1', default_options : ['warning_level=3'])
 
 src_files = [
   'src/char_string.c',
-  'src/panic.c'
 ]
 incdir = include_directories('include')
 
