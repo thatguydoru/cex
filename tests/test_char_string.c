@@ -41,5 +41,7 @@ int main(void) {
     // CharString a = char_string_from_c_str("hellolleh");
     // fwrite(a.items, sizeof(char), a.size, stdout);
 
+    panic("bruh");
+
     return 0;
 }

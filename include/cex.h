@@ -124,13 +124,10 @@ void char_string_free(CharString* s);
 
 /////////// Panic ///////////
 
-#define panic_fmt(fmt, ...)                                          \
-    {                                                                \
-        fprintf(                                                     \
-            stderr, "[PANIC] %s, line %d\n" fmt, __FILE__, __LINE__, \
-            __VA_ARGS__                                              \
-        );                                                           \
-        exit(-1);                                                    \
+#define panic_fmt(fmt, ...)                                                      \
+    {                                                                            \
+        fprintf(stderr, "[PANIC] %s:%d: " fmt, __FILE__, __LINE__, __VA_ARGS__); \
+        _Exit(1);                                                                \
     }
 
 #define panic(message) panic_fmt("%s\n", (message))
