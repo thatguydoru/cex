@@ -4,6 +4,6 @@ PointerAlignment: Left
 AlignAfterOpenBracket: BlockIndent
 AlignEscapedNewlines: Left
 IndentCaseLabels: true
-ColumnLimit: 80
+ColumnLimit: 100
 AllowShortBlocksOnASingleLine: Empty
 AllowShortFunctionsOnASingleLine: Empty
