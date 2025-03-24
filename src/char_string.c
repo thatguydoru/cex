@@ -53,7 +53,7 @@ int char_string_rfind(const CharString* s, const char pat[]) {
     size_t patlen = strlen(pat);
     for (size_t i = s->size; i > 0; i--) {
         if (!strncmp(&s->items[i - 1], pat, patlen)) {
-            return i;
+            return i - 1;
         }
     }
 
@@ -61,7 +61,7 @@ int char_string_rfind(const CharString* s, const char pat[]) {
 }
 
 void char_string_to_buffer(const CharString* s, char out[], size_t size) {
-    memcpy(out, s->items, clamp(0, s->size, size));
+    memcpy(out, s->items, s->size < size ? s->size : size);
 }
 
 void char_string_free(CharString* s) {

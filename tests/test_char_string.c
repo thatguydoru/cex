@@ -27,13 +27,14 @@ void test_rfind(void) {
     int idx = char_string_rfind(&a, "ll");
     assert(idx == 5);
 
-    idx = char_string_find(&a, "bad");
+    idx = char_string_rfind(&a, "bad");
     assert(idx == -1);
 }
 
 int main(void) {
     test_equal();
     test_find();
+    test_rfind();
 
     return 0;
 }
