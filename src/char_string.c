@@ -13,7 +13,8 @@ CharString char_string_default(void) {
 
 CharString char_string_from_c_str(const char c_str[]) {
     CharString s;
-    dynarray_from_c_array(char, s, c_str, strlen(c_str));
+    size_t sz = strlen(c_str);
+    dynarray_from_c_array(char, s, c_str, sz);
 
     return s;
 }
