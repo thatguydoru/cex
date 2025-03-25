@@ -3,32 +3,32 @@
 #include "cex.h"
 
 void test_equal(void) {
-    CharString a = char_string_from_c_str("hello");
-    CharString b = char_string_from_c_str("hello");
+    CharString a = char_string_new("hello");
+    CharString b = char_string_new("hello");
     assert(char_string_eq(&a, &b));
 
-    a = char_string_from_c_str("hello");
-    b = char_string_from_c_str("world");
+    a = char_string_new("hello");
+    b = char_string_new("world");
     assert(!char_string_eq(&a, &b));
 }
 
 void test_find(void) {
-    CharString a = char_string_from_c_str("he3333llo");
-    MaybeIndex idx = char_string_find(&a, "ll");
+    CharString a = char_string_new("he3333llo");
+    MaybeIndex idx = char_string_find(&a, "ll", 2);
     assert(idx.exists);
     assert(idx.value == 6);
 
-    idx = char_string_find(&a, "bad");
+    idx = char_string_find(&a, "bad", 3);
     assert(!idx.exists);
 }
 
 void test_rfind(void) {
-    CharString a = char_string_from_c_str("hellolleh");
-    MaybeIndex idx = char_string_rfind(&a, "ll");
+    CharString a = char_string_new("hellolleh");
+    MaybeIndex idx = char_string_rfind(&a, "ll", 2);
     assert(idx.exists);
     assert(idx.value == 5);
 
-    idx = char_string_rfind(&a, "bad");
+    idx = char_string_rfind(&a, "bad", 3);
     assert(!idx.exists);
 }
 

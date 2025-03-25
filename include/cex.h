@@ -75,7 +75,7 @@ typedef Maybe(size_t) MaybeIndex;
 
 #define dynarray_default(T, arr) dynarray_with_capacity(T, arr, 8)
 
-#define dynarray_from_c_array(T, arr, c_arr, sz)  \
+#define dynarray_new(T, arr, c_arr, sz)  \
     {                                             \
         dynarray_with_capacity(T, arr, sz);       \
         memcpy(arr.items, c_arr, sz * sizeof(T)); \
@@ -123,12 +123,12 @@ typedef DynArray(char) CharString;
 
 CharString char_string_with_capacity(size_t capacity);
 CharString char_string_default(void);
-CharString char_string_from_c_str(const char c_str[]);
+CharString char_string_new(const char c_str[]);
 void char_string_concat_inplace(CharString* dest, const CharString* src);
 CharString char_string_concat(const CharString* a, const CharString* b);
 bool char_string_eq(const CharString* a, const CharString* b);
-MaybeIndex char_string_find(const CharString* s, const char pat[]);
-MaybeIndex char_string_rfind(const CharString* s, const char pat[]);
+MaybeIndex char_string_find(const CharString* s, const char pat[], size_t patlen);
+MaybeIndex char_string_rfind(const CharString* s, const char pat[], size_t patlen);
 void char_string_to_buffer(const CharString* s, char out[], size_t size);
 void char_string_free(CharString* s);
 

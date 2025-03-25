@@ -11,10 +11,10 @@ CharString char_string_default(void) {
     return char_string_with_capacity(8);
 }
 
-CharString char_string_from_c_str(const char c_str[]) {
+CharString char_string_new(const char c_str[]) {
     CharString s;
     size_t sz = strlen(c_str);
-    dynarray_from_c_array(char, s, c_str, sz);
+    dynarray_new(char, s, c_str, sz);
 
     return s;
 }
@@ -39,8 +39,7 @@ bool char_string_eq(const CharString* a, const CharString* b) {
     return !strncmp(a->items, b->items, a->size);
 }
 
-MaybeIndex char_string_find(const CharString* s, const char pat[]) {
-    size_t patlen = strlen(pat);
+MaybeIndex char_string_find(const CharString* s, const char pat[], size_t patlen) {
     if (patlen > s->size) {
         return None(MaybeIndex);
     }
@@ -48,6 +47,10 @@ MaybeIndex char_string_find(const CharString* s, const char pat[]) {
         return !strncmp(s->items, pat, patlen) ? Some(MaybeIndex, 0) : None(MaybeIndex);
     }
     for (size_t i = 0; i < s->size; i++) {
+        size_t rem = &s->items[s->size - 1] - &s->items[i] + 1;
+        if (rem < patlen) {
+            return None(MaybeIndex);
+        }
         if (!strncmp(&s->items[i], pat, patlen)) {
             return Some(MaybeIndex, i);
         }
@@ -56,8 +59,7 @@ MaybeIndex char_string_find(const CharString* s, const char pat[]) {
     return None(MaybeIndex);
 }
 
-MaybeIndex char_string_rfind(const CharString* s, const char pat[]) {
-    size_t patlen = strlen(pat);
+MaybeIndex char_string_rfind(const CharString* s, const char pat[], size_t patlen) {
     if (patlen > s->size) {
         return None(MaybeIndex);
     }
@@ -65,6 +67,10 @@ MaybeIndex char_string_rfind(const CharString* s, const char pat[]) {
         return !strncmp(s->items, pat, patlen) ? Some(MaybeIndex, 0) : None(MaybeIndex);
     }
     for (size_t i = s->size; i > 0; i--) {
+        size_t rem = &s->items[i - 1] - &s->items[0] + 1;
+        if (rem < patlen) {
+            return None(MaybeIndex);
+        }
         if (!strncmp(&s->items[i - 1], pat, patlen)) {
             return Some(MaybeIndex, i - 1);
         }
