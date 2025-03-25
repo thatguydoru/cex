@@ -49,7 +49,7 @@ MaybeIndex char_string_find(const CharString* s, const char pat[], size_t patlen
     for (size_t i = 0; i < s->size; i++) {
         size_t rem = &s->items[s->size - 1] - &s->items[i] + 1;
         if (rem < patlen) {
-            return None(MaybeIndex);
+            break;
         }
         if (!strncmp(&s->items[i], pat, patlen)) {
             return Some(MaybeIndex, i);
@@ -69,7 +69,7 @@ MaybeIndex char_string_rfind(const CharString* s, const char pat[], size_t patle
     for (size_t i = s->size; i > 0; i--) {
         size_t rem = &s->items[i - 1] - &s->items[0] + 1;
         if (rem < patlen) {
-            return None(MaybeIndex);
+            break;
         }
         if (!strncmp(&s->items[i - 1], pat, patlen)) {
             return Some(MaybeIndex, i - 1);
