@@ -129,7 +129,7 @@ CharString char_string_concat(const CharString* a, const CharString* b);
 bool char_string_eq(const CharString* a, const CharString* b);
 MaybeIndex char_string_find(const CharString* s, const char pat[], size_t patlen);
 MaybeIndex char_string_rfind(const CharString* s, const char pat[], size_t patlen);
-void char_string_to_buffer(const CharString* s, char out[], size_t size);
+size_t char_string_to_buffer(const CharString* s, char out[], size_t size);
 void char_string_free(CharString* s);
 
 #endif

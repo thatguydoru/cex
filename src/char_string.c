@@ -79,8 +79,11 @@ MaybeIndex char_string_rfind(const CharString* s, const char pat[], size_t patle
     return None(MaybeIndex);
 }
 
-void char_string_to_buffer(const CharString* s, char out[], size_t size) {
-    memcpy(out, s->items, s->size < size ? s->size : size);
+size_t char_string_to_buffer(const CharString* s, char out[], size_t size) {
+    size_t sz = min(s->size, size);
+    memcpy(out, s->items, sz);
+
+    return sz;
 }
 
 void char_string_free(CharString* s) {
