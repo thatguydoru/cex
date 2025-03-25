@@ -81,7 +81,7 @@ MaybeIndex char_string_rfind(const CharString* s, const char pat[], size_t patle
 
 size_t char_string_to_buffer(const CharString* s, char out[], size_t size) {
     size_t sz = min(s->size, size);
-    memcpy(out, s->items, sz);
+    strncpy(out, s->items, sz);
 
     return sz;
 }
