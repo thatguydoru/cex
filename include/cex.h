@@ -75,11 +75,11 @@ typedef Maybe(size_t) MaybeIndex;
 
 #define dynarray_default(T, arr) dynarray_with_capacity(T, arr, 8)
 
-#define dynarray_new(T, arr, c_arr, sz)            \
-    {                                              \
-        dynarray_with_capacity(T, arr, sz);        \
-        memmove(arr.items, c_arr, sz * sizeof(T)); \
-        arr.size = sz;                             \
+#define dynarray_new(T, arr, c_arr, sz)           \
+    {                                             \
+        dynarray_with_capacity(T, arr, sz);       \
+        memcpy(arr.items, c_arr, sz * sizeof(T)); \
+        arr.size = sz;                            \
     }
 
 #define dynarray_push(arr, item)                                        \
@@ -92,15 +92,15 @@ typedef Maybe(size_t) MaybeIndex;
         (arr)->items[(arr)->size++] = item;                             \
     }
 
-#define dynarray_extend(arr, other)                                            \
-    {                                                                          \
-        size_t sz = sizeof((arr)->items[0]);                                   \
-        if ((arr)->capacity - (arr)->size < (other)->size) {                   \
-            (arr)->capacity += (other)->capacity;                              \
-            (arr)->items = realloc((arr)->items, sz * (arr)->capacity);        \
-        }                                                                      \
-        memmove(&(arr)->items[(arr)->size], (other)->items, sz*(other)->size); \
-        (arr)->size += (other)->size;                                          \
+#define dynarray_extend(arr, other, othersz)                            \
+    {                                                                   \
+        size_t sz = sizeof((arr)->items[0]);                            \
+        if ((arr)->capacity - (arr)->size < (othersz)) {                \
+            (arr)->capacity += (othersz);                               \
+            (arr)->items = realloc((arr)->items, sz * (arr)->capacity); \
+        }                                                               \
+        memmove(&(arr)->items[(arr)->size], (other), sz*(othersz));     \
+        (arr)->size += (othersz);                                       \
     }
 
 #define dynarray_free(arr)   \
