@@ -103,13 +103,11 @@ typedef Maybe(size_t) MaybeIndex;
         (arr)->size += (othersz);                                       \
     }
 
-#define dynarray_resize(arr)                                            \
-    {                                                                   \
-        if ((arr)->size < (arr)->capacity) {                            \
-            size_t sz = sizeof((arr)->items[0]);                        \
-            (arr)->capacity = (arr)->size;                              \
-            (arr)->items = realloc((arr)->items, sz * (arr)->capacity); \
-        }                                                               \
+#define dynarray_resize(arr)                                        \
+    {                                                               \
+        size_t sz = sizeof((arr)->items[0]);                        \
+        (arr)->capacity = (arr)->size;                              \
+        (arr)->items = realloc((arr)->items, sz * (arr)->capacity); \
     }
 
 #define dynarray_free(arr)   \
