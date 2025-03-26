@@ -103,6 +103,15 @@ typedef Maybe(size_t) MaybeIndex;
         (arr)->size += (othersz);                                       \
     }
 
+#define dynarray_resize(arr)                                            \
+    {                                                                   \
+        if ((arr)->size < (arr)->capacity) {                            \
+            size_t sz = sizeof((arr)->items[0]);                        \
+            (arr)->capacity = (arr)->size;                              \
+            (arr)->items = realloc((arr)->items, sz * (arr)->capacity); \
+        }                                                               \
+    }
+
 #define dynarray_free(arr)   \
     {                        \
         free((arr)->items);  \
@@ -124,6 +133,7 @@ typedef DynArray(char) CharString;
 CharString char_string_with_capacity(size_t capacity);
 CharString char_string_default(void);
 CharString char_string_new(const char c_str[]);
+void char_string_resize(CharString* s);
 void char_string_concat_inplace(CharString* dest, const CharString* src);
 CharString char_string_concat(const CharString* a, const CharString* b);
 bool char_string_eq(const CharString* a, const CharString* b);

@@ -19,6 +19,10 @@ CharString char_string_new(const char c_str[]) {
     return s;
 }
 
+void char_string_resize(CharString* s) {
+    dynarray_resize(s);
+}
+
 void char_string_concat_inplace(CharString* dest, const CharString* src) {
     dynarray_extend(dest, src->items, src->size);
 }
