@@ -1,5 +1,5 @@
-#ifndef __CEX_H__
-#define __CEX_H__
+#ifndef __CEX_CORE_H__
+#define __CEX_CORE_H__
 
 #include <stdbool.h>
 #include <stdio.h>
