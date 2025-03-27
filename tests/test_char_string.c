@@ -1,13 +1,12 @@
 #include <assert.h>
 
-#include "cex.h"
+#include "core.h"
 
 void test_equal(void) {
     CharString a = char_string_new("hello");
     CharString b = char_string_new("hello");
     assert(char_string_eq(&a, &b));
 
-    a = char_string_new("hello");
     b = char_string_new("world");
     assert(!char_string_eq(&a, &b));
 }
@@ -36,9 +35,6 @@ int main(void) {
     test_equal();
     test_find();
     test_rfind();
-
-    // CharString a = char_string_from_c_str("hellolleh");
-    // fwrite(a.items, sizeof(char), a.size, stdout);
 
     return 0;
 }
