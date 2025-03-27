@@ -1,4 +1,4 @@
-#include "cex.h"
+#include "core.h"
 
 CharString char_string_with_capacity(size_t capacity) {
     CharString s;
