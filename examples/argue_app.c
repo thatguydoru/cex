@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 
     for (size_t i = 0; i < args.size; i++) {
         ArgueArg* arg = &args.items[i];
-        const ArgueFlag* flag = argue_get_parser(arg->key, flags, arrsize(flags));
+        const ArgueFlag* flag = argue_get_flag(arg->key, flags, arrsize(flags));
         if (flag) {
             if (argue_is_flag_name("foo", flag->name, flag->shorthand)) {
                 int res = flag->parse(&conf.foo, arg->value);

@@ -22,7 +22,7 @@ typedef DynArray(ArgueArg) ArgueArgArray;
 void argue_print_help(const char* description, const ArgueFlag flags[], size_t flagsz);
 ArgueArgArray argue_get_args(size_t argc, char* argv[]);
 bool argue_is_flag_name(const char* name, const char* flagname, const char* shorthand);
-const ArgueFlag* argue_get_parser(const char* argkey, const ArgueFlag flags[], size_t flagsz);
+const ArgueFlag* argue_get_flag(const char* argkey, const ArgueFlag flags[], size_t flagsz);
 const ArgueArg* argue_get_first_unknown_arg(
     const ArgueArgArray* args,
     const ArgueFlag flags[],

@@ -59,7 +59,7 @@ bool argue_is_flag_name(const char* name, const char* longname, const char* shor
     return (longname && !strcmp(name, longname)) || (shorthand && !strcmp(name, shorthand));
 }
 
-const ArgueFlag* argue_get_parser(const char* argkey, const ArgueFlag flags[], size_t flagsz) {
+const ArgueFlag* argue_get_flag(const char* argkey, const ArgueFlag flags[], size_t flagsz) {
     for (size_t i = 0; i < flagsz; i++) {
         const ArgueFlag* flag = &flags[i];
         if (argue_is_flag_name(argkey, flag->name, flag->shorthand)) {
