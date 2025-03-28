@@ -1,19 +1,25 @@
+#include <errno.h>
+
 #include "argue.h"
 
 void argue_print_help(const char* description, const ArgueFlag flags[], size_t flagsz) {
     printf("%s\n\n", description);
     for (size_t i = 0; i < flagsz; i++) {
         const ArgueFlag* flag = &flags[i];
-        printf("\t%s, %s\t\t%s", flag->name, flag->shorthand, flag->description);
+        if (flag->shorthand) {
+            printf("\t%s, %s\t\t%s", flag->name, flag->shorthand, flag->description);
+        } else {
+            printf("\t%s\t\t%s", flag->name, flag->description);
+        }
     }
 }
 
 bool is_short_key(const char* s) {
-    return  s[0] == '-' && s[1] != '-';
+    return s[0] == '-' && s[1] != '-';
 }
 
 bool is_long_key(const char* s) {
-    return  s[0] == '-' && s[1] == '-';
+    return s[0] == '-' && s[1] == '-';
 }
 
 bool is_flag_key(const char* s) {
@@ -58,4 +64,43 @@ const ArgueFlag* argue_get_parser(const char* argkey, const ArgueFlag flags[], s
     }
 
     return NULL;
+}
+
+////////// Default parser implementations //////////
+
+int argue_parse_int(void* out, const char* value) {
+    errno = 0;
+    size_t sz = strlen(value);
+    char* end = NULL;
+    long n = strtol(value, &end, 10);
+    if (end != &value[sz - 1]) {
+        return ArgueParseNumWrongFmt;
+    }
+    if (errno == ERANGE) {
+        return ArgueParseNumOutOfRange;
+    }
+    *((int*)out) = n;
+
+    return ArgueParseNumOk;
+}
+
+int argue_parse_float(void* out, const char* value) {
+    errno = 0;
+    size_t sz = strlen(value);
+    char* end = NULL;
+    float n = strtof(value, &end);
+    if (end != &value[sz - 1]) {
+        return ArgueParseNumWrongFmt;
+    }
+    if (errno == ERANGE) {
+        return ArgueParseNumOutOfRange;
+    }
+    *((float*)out) = n;
+
+    return ArgueParseNumOk;
+}
+
+int argue_parse_str(void* out, const char* value) {
+    *((char**)out) = (char*)value;
+    return 0;
 }

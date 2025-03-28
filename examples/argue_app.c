@@ -11,7 +11,13 @@ const ArgueFlag flags[] = {
         .description = "a parser for foo",
         .shorthand = "f",
         .parse = &argue_parse_int,
-    }   
+    },
+    {
+        .name = "bar",
+        .description = "the bar",
+        .shorthand = NULL,
+        .parse = &argue_parse_float,
+    }
 };
 
 int main(int argc, char* argv[]) {
@@ -28,16 +34,16 @@ int main(int argc, char* argv[]) {
         const ArgueFlag* flag = argue_get_parser(arg->key, flags, arrsize(flags));
         if (flag) {
             if (argue_is_flag_name("foo", flag->name, flag->shorthand)) {
-                bool ok = flag->parse(&conf.foo, arg->value);
+                int ok = flag->parse(&conf.foo, arg->value);
                 if (!ok) {
-                    eprintf("%s argument must be an int\n", flag->name);
+                    eprintln("wrong argument for foo");
                     return 0;
                 }
             }
             if (argue_is_flag_name("bar", flag->name, flag->shorthand)) {
-                bool ok = flag->parse(&conf.bar, arg->value);
+                int ok = flag->parse(&conf.bar, arg->value);
                 if (!ok) {
-                    eprintf("%s argument must be float\n", flag->name);
+                    eprintln("wrong argument for bar");
                     return 0;
                 }
             }

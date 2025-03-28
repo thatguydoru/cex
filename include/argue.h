@@ -3,7 +3,7 @@
 
 #include "core.h"
 
-typedef bool (*ArgueParseFn)(void* out, const char* value);
+typedef int (*ArgueParseFn)(void* out, const char* value);
 
 typedef struct {
     const char* name;
@@ -26,8 +26,14 @@ const ArgueFlag* argue_get_parser(const char* argkey, const ArgueFlag flags[], s
 
 ////////// Default parsers ////////
 
-bool argue_parse_int(void* out, const char* value);
-bool argue_parse_float(void* out, const char* value);
-bool argue_parse_char_string(void* out, const char* value);
+typedef enum {
+    ArgueParseNumOk,
+    ArgueParseNumWrongFmt,
+    ArgueParseNumOutOfRange,
+} ArgueParseNumResult;
+
+int argue_parse_int(void* out, const char* value);
+int argue_parse_float(void* out, const char* value);
+int argue_parse_str(void* out, const char* value);
 
 #endif
