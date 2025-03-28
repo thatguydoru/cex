@@ -23,6 +23,11 @@ void argue_print_help(const char* description, const ArgueFlag flags[], size_t f
 ArgueArgArray argue_get_args(size_t argc, char* argv[]);
 bool argue_is_flag_name(const char* name, const char* flagname, const char* shorthand);
 const ArgueFlag* argue_get_parser(const char* argkey, const ArgueFlag flags[], size_t flagsz);
+const ArgueArg* argue_get_first_unknown_arg(
+    const ArgueArgArray* args,
+    const ArgueFlag flags[],
+    size_t flagsz
+);
 
 ////////// Default parsers ////////
 

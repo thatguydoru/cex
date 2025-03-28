@@ -28,29 +28,36 @@ int main(int argc, char* argv[]) {
 
     Conf conf = {0};
     ArgueArgArray args = argue_get_args(argc, argv);
+    const ArgueArg* unknown = argue_get_first_unknown_arg(&args, flags, arrsize(flags));
+    if (unknown) {
+        eprintf("--%s is not a flag\n", unknown->key);
+        return 1;
+    }
 
     for (size_t i = 0; i < args.size; i++) {
         ArgueArg* arg = &args.items[i];
         const ArgueFlag* flag = argue_get_parser(arg->key, flags, arrsize(flags));
         if (flag) {
             if (argue_is_flag_name("foo", flag->name, flag->shorthand)) {
-                int ok = flag->parse(&conf.foo, arg->value);
-                if (!ok) {
+                int res = flag->parse(&conf.foo, arg->value);
+                if (res) {
                     eprintln("wrong argument for foo");
-                    return 0;
+                    return 1;
                 }
             }
             if (argue_is_flag_name("bar", flag->name, flag->shorthand)) {
-                int ok = flag->parse(&conf.bar, arg->value);
-                if (!ok) {
+                int res = flag->parse(&conf.bar, arg->value);
+                if (res) {
                     eprintln("wrong argument for bar");
-                    return 0;
+                    return 1;
                 }
             }
         } else {
             eprintf("%s is not a valid argument\n", arg->key);
         }
     }
+
+    printf("%d, %f\n", conf.foo, conf.bar);
 
     return 0;
 }
