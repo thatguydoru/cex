@@ -49,7 +49,7 @@ typedef Maybe(size_t) MaybeIndex;
 
 /////////// Panic ///////////
 
-#define panicf(fmt, ...)                                                      \
+#define panicf(fmt, ...)                                                         \
     {                                                                            \
         fprintf(stderr, "[PANIC] %s:%d: " fmt, __FILE__, __LINE__, __VA_ARGS__); \
         _Exit(1);                                                                \
@@ -86,16 +86,16 @@ typedef Maybe(size_t) MaybeIndex;
 
 #define dynarray_with_capacity_once(T, arr, cap) \
     {                                            \
-        if (!dynarray_is_init(&arr)) {            \
+        if (!dynarray_is_init(&arr)) {           \
             dynarray_with_capacity(T, arr);      \
         }                                        \
     }
 
-#define dynarray_default_once(T, arr) \
-    {                                 \
+#define dynarray_default_once(T, arr)  \
+    {                                  \
         if (!dynarray_is_init(&arr)) { \
-            dynarray_default(T, arr); \
-        }                             \
+            dynarray_default(T, arr);  \
+        }                              \
     }
 
 #define dynarray_push(arr, item)                                        \
