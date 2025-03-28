@@ -49,13 +49,13 @@ typedef Maybe(size_t) MaybeIndex;
 
 /////////// Panic ///////////
 
-#define panic_fmt(fmt, ...)                                                      \
+#define panicf(fmt, ...)                                                      \
     {                                                                            \
         fprintf(stderr, "[PANIC] %s:%d: " fmt, __FILE__, __LINE__, __VA_ARGS__); \
         _Exit(1);                                                                \
     }
 
-#define panic(message) panic_fmt("%s\n", (message))
+#define panic(message) panicf("%s\n", (message))
 
 /////////// Dynamic Array ///////////
 
@@ -80,6 +80,22 @@ typedef Maybe(size_t) MaybeIndex;
         dynarray_with_capacity(T, arr, sz);       \
         memcpy(arr.items, c_arr, sz * sizeof(T)); \
         arr.size = sz;                            \
+    }
+
+#define dynarray_is_init(arr) (bool)(arr)->capacity
+
+#define dynarray_with_capacity_once(T, arr, cap) \
+    {                                            \
+        if (!dynarray_is_init(&arr)) {            \
+            dynarray_with_capacity(T, arr);      \
+        }                                        \
+    }
+
+#define dynarray_default_once(T, arr) \
+    {                                 \
+        if (!dynarray_is_init(&arr)) { \
+            dynarray_default(T, arr); \
+        }                             \
     }
 
 #define dynarray_push(arr, item)                                        \
@@ -139,5 +155,14 @@ MaybeIndex char_string_find(const CharString* s, const char pat[], size_t patlen
 MaybeIndex char_string_rfind(const CharString* s, const char pat[], size_t patlen);
 size_t char_string_to_buffer(const CharString* s, char out[], size_t size);
 void char_string_free(CharString* s);
+
+/////////// Stack-allocated Array Utilities ///////////
+
+#define arrsize(arr) sizeof(arr) / sizeof(arr[0])
+
+/////////// IO ///////////
+
+#define eprintf(fmt, ...) fprintf(stderr, "[ERROR] " fmt, __VA_ARGS__)
+#define eprintln(message) eprintf("%s", message)
 
 #endif
