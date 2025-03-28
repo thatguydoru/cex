@@ -46,10 +46,10 @@ ArgueArgArray argue_get_args(size_t argc, char* argv[]) {
                 arg.value = argv[next];
                 i++;
             }
-            dynarray_push(&args, arg);
         } else {
             arg.value = argstr;
         }
+        dynarray_push(&args, arg);
     }
 
     return args;
