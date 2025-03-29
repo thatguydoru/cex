@@ -88,7 +88,7 @@ const ArgueArg* argue_get_first_unknown_arg(
 ) {
     for (size_t i = 0; i < args->size; i++) {
         const ArgueArg* arg = &args->items[i];
-        if (arg->key == NULL) {
+        if (!arg->key) {
             continue;
         }
         if (!is_name_in_flags(arg->key, flags, flagsz)) {

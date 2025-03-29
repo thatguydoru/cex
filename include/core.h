@@ -142,7 +142,8 @@ typedef DynArray(char) CharString;
 
 CharString char_string_with_capacity(size_t capacity);
 CharString char_string_default(void);
-CharString char_string_new(const char c_str[]);
+CharString char_string_new(const char str[]);
+CharString char_string_with_size(const char str[], size_t size);
 void char_string_resize(CharString* s);
 void char_string_concat_inplace(CharString* dest, const CharString* src);
 CharString char_string_concat(const CharString* a, const CharString* b);

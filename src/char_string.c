@@ -11,12 +11,15 @@ CharString char_string_default(void) {
     return char_string_with_capacity(8);
 }
 
-CharString char_string_new(const char c_str[]) {
+CharString char_string_with_size(const char str[], size_t size) {
     CharString s;
-    size_t sz = strlen(c_str);
-    dynarray_new(char, s, c_str, sz);
+    dynarray_new(char, s, str, size);
 
     return s;
+}
+
+CharString char_string_new(const char str[]) {
+    return char_string_with_size(str, strlen(str));
 }
 
 void char_string_resize(CharString* s) {
