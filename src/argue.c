@@ -103,32 +103,28 @@ const ArgueArg* argue_get_first_unknown_arg(
 
 int argue_parse_int(void* out, const char* value) {
     errno = 0;
-    size_t sz = strlen(value);
     char* end = NULL;
-    long n = strtol(value, &end, 10);
-    if (end != &value[sz]) {
+    *((int*)out) = strtol(value, &end, 10);
+    if (end != &value[strlen(value)]) {
         return ArgueParseNumWrongFmt;
     }
     if (errno == ERANGE) {
         return ArgueParseNumOutOfRange;
     }
-    *((int*)out) = n;
 
     return ArgueParseNumOk;
 }
 
 int argue_parse_float(void* out, const char* value) {
     errno = 0;
-    size_t sz = strlen(value);
     char* end = NULL;
-    float n = strtof(value, &end);
-    if (end != &value[sz]) {
+    *((float*)out) = strtof(value, &end);
+    if (end != &value[strlen(value)]) {
         return ArgueParseNumWrongFmt;
     }
     if (errno == ERANGE) {
         return ArgueParseNumOutOfRange;
     }
-    *((float*)out) = n;
 
     return ArgueParseNumOk;
 }

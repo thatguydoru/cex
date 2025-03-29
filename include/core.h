@@ -66,11 +66,14 @@ typedef Maybe(size_t) MaybeIndex;
         size_t capacity; \
     }
 
-#define dynarray_with_capacity(T, arr, cap)  \
-    {                                        \
-        arr.capacity = cap;                  \
-        arr.size = 0;                        \
-        arr.items = malloc(sizeof(T) * cap); \
+#define dynarray_with_capacity(T, arr, cap)                                \
+    {                                                                      \
+        arr.capacity = cap;                                                \
+        arr.size = 0;                                                      \
+        arr.items = malloc(sizeof(T) * cap);                               \
+        if (!arr.items) {                                                  \
+            panic("dynamic array allocation failed, may be out of memory") \
+        }                                                                  \
     }
 
 #define dynarray_default(T, arr) dynarray_with_capacity(T, arr, 8)
@@ -82,32 +85,41 @@ typedef Maybe(size_t) MaybeIndex;
         arr.size = sz;                            \
     }
 
-#define dynarray_push(arr, item)                                        \
-    {                                                                   \
-        if ((arr)->size == (arr)->capacity) {                           \
-            size_t sz = sizeof((arr)->items[0]);                        \
-            (arr)->capacity *= 2;                                       \
-            (arr)->items = realloc((arr)->items, sz * (arr)->capacity); \
-        }                                                               \
-        (arr)->items[(arr)->size++] = item;                             \
+#define dynarray_push(arr, item)                                                  \
+    {                                                                             \
+        if ((arr)->size == (arr)->capacity) {                                     \
+            size_t sz = sizeof((arr)->items[0]);                                  \
+            (arr)->capacity *= 2;                                                 \
+            (arr)->items = realloc((arr)->items, sz * (arr)->capacity);           \
+            if (!(arr)->items) {                                                  \
+                panic("dynamic array reallocation failed, may be out of memory"); \
+            }                                                                     \
+        }                                                                         \
+        (arr)->items[(arr)->size++] = item;                                       \
     }
 
-#define dynarray_extend(arr, other, othersz)                            \
-    {                                                                   \
-        size_t sz = sizeof((arr)->items[0]);                            \
-        if ((arr)->capacity - (arr)->size < (othersz)) {                \
-            (arr)->capacity += (othersz);                               \
-            (arr)->items = realloc((arr)->items, sz * (arr)->capacity); \
-        }                                                               \
-        memmove(&(arr)->items[(arr)->size], (other), sz*(othersz));     \
-        (arr)->size += (othersz);                                       \
+#define dynarray_extend(arr, other, othersz)                                      \
+    {                                                                             \
+        size_t sz = sizeof((arr)->items[0]);                                      \
+        if ((arr)->capacity - (arr)->size < (othersz)) {                          \
+            (arr)->capacity += (othersz);                                         \
+            (arr)->items = realloc((arr)->items, sz * (arr)->capacity);           \
+            if (!(arr)->items) {                                                  \
+                panic("dynamic array reallocation failed, may be out of memory"); \
+            }                                                                     \
+        }                                                                         \
+        memmove(&(arr)->items[(arr)->size], (other), sz*(othersz));               \
+        (arr)->size += (othersz);                                                 \
     }
 
-#define dynarray_resize(arr)                                        \
-    {                                                               \
-        size_t sz = sizeof((arr)->items[0]);                        \
-        (arr)->capacity = (arr)->size;                              \
-        (arr)->items = realloc((arr)->items, sz * (arr)->capacity); \
+#define dynarray_resize(arr)                                                  \
+    {                                                                         \
+        size_t sz = sizeof((arr)->items[0]);                                  \
+        (arr)->capacity = (arr)->size;                                        \
+        (arr)->items = realloc((arr)->items, sz * (arr)->capacity);           \
+        if (!(arr)->items) {                                                  \
+            panic("dynamic array reallocation failed, may be out of memory"); \
+        }                                                                     \
     }
 
 #define dynarray_free(arr)   \
