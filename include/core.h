@@ -82,22 +82,6 @@ typedef Maybe(size_t) MaybeIndex;
         arr.size = sz;                            \
     }
 
-#define dynarray_is_init(arr) (bool)(arr)->capacity
-
-#define dynarray_with_capacity_once(T, arr, cap) \
-    {                                            \
-        if (!dynarray_is_init(&arr)) {           \
-            dynarray_with_capacity(T, arr);      \
-        }                                        \
-    }
-
-#define dynarray_default_once(T, arr)  \
-    {                                  \
-        if (!dynarray_is_init(&arr)) { \
-            dynarray_default(T, arr);  \
-        }                              \
-    }
-
 #define dynarray_push(arr, item)                                        \
     {                                                                   \
         if ((arr)->size == (arr)->capacity) {                           \
