@@ -6,7 +6,12 @@
 #define argue_eprintf(fmt, ...) eprintf("%s: " fmt, bin, __VA_ARGS__)
 #define argue_eprintln(message) argue_eprintf("%s\n", message)
 
-typedef bool (*ArgueParseFn)(void* out, const char bin[], const char flag_name[], const char value[]);
+typedef bool (*ArgueParseFn)(
+    void* out,
+    const char bin[],
+    const char flag_name[],
+    const char value[]
+);
 
 typedef struct {
     const char* name;
@@ -30,12 +35,20 @@ typedef enum {
     ArgueParseFlagMissingValue,
     ArgueParseArgsTooMany,
     ArgueParseArgsMissingValue,
+} ArgueParseErrorTag;
+
+typedef struct {
+    ArgueParseErrorTag tag;
+    union {
+        const char* flag_does_not_exist;
+        const ArgueFlag* flag_missing_value;
+        size_t args_too_many;
+    } inner;
 } ArgueParseError;
 
 typedef Result(size_t, ArgueParseError) ArgueParseResult;
 
 ArgueParseResult argue_parse_flat(
-    const char* args_out[],
     const char description[],
     const char* const argv[],
     size_t argc,

@@ -15,7 +15,7 @@ const char* rstrstr(const char* haystack, const char needle[]) {
     for (size_t i = strlen(haystack); i > 0; i--) {
         const char* ptr = &haystack[i - 1];
         if (!strncmp(ptr, needle, needlesz)) {
-            return ptr + sizeof(char);
+            return ptr;
         }
     }
 
@@ -56,7 +56,7 @@ void print_help_flat(
 ) {
     puts(description);
     puts("\nUSAGE:");
-    bin = rstrstr(bin, "/");
+    bin = rstrstr(bin, "/") + sizeof(char);
     if (config) {
         printf("  %s [FLAGS] [ARGS]\n\n", bin);
         puts("ARGS:");
@@ -165,7 +165,6 @@ bool has_help_flag_defined(const char* const argv[], size_t argc) {
 }
 
 ArgueParseResult argue_parse_flat(
-    const char* args_out[],
     const char* description,
     const char* const argv[],
     size_t argc,
@@ -189,7 +188,7 @@ ArgueParseResult argue_parse_flat(
     const char* bin = argv[0];
     if (argc == 1 || has_help_flag_defined(argv, argc)) {
         print_help_flat(bin, description, flags, flagsz, config);
-        return Err(ArgueParseResult, ArgueParsePrintHelp);
+        return Err(ArgueParseResult, {ArgueParsePrintHelp, {0}});
     }
 
     const char* flag_keys[argc];
@@ -206,7 +205,10 @@ ArgueParseResult argue_parse_flat(
             const ArgueFlag* flag = get_flag(key, flags, flagsz);
             if (!flag) {
                 argue_eprintf("%s is not a flag\n", key);
-                return Err(ArgueParseResult, ArgueParseFlagDoesNotExist);
+                return Err(
+                    ArgueParseResult,
+                    {ArgueParseFlagDoesNotExist, .inner.flag_does_not_exist = argv_arg}
+                );
             }
             flag_keys[flag_keysz++] = key;
             size_t next = i + 1;
@@ -225,11 +227,11 @@ ArgueParseResult argue_parse_flat(
 
     if (!config->variadic && arg_valuesz > 1) {
         argue_eprintln("too many arguments");
-        return Err(ArgueParseResult, ArgueParseArgsTooMany);
+        return Err(ArgueParseResult, {ArgueParseArgsTooMany, .inner.args_too_many = arg_valuesz});
     }
     if (config->required && arg_valuesz == 0) {
         argue_eprintf("%s: missing argument\n", config->name);
-        return Err(ArgueParseResult, ArgueParseArgsMissingValue);
+        return Err(ArgueParseResult, {ArgueParseArgsMissingValue, {0}});
     }
 
     // evaluate flags
@@ -242,10 +244,10 @@ ArgueParseResult argue_parse_flat(
             if (flag->parsefn) {
                 if (!value) {
                     argue_eprintf("%s: missing value\n", flag->name);
-                    return Err(ArgueParseResult, ArgueParseFlagMissingValue);
+                    return Err(ArgueParseResult, {ArgueParseFlagMissingValue, .inner.flag_missing_value = flag});
                 }
                 if (!flag->parsefn(flag->out, bin, flag->name, value)) {
-                    return Err(ArgueParseResult, ArgueParseParseFnFail);
+                    return Err(ArgueParseResult, {ArgueParseParseFnFail, {0}});
                 }
             } else {
                 *((bool*)flag->out) = true;

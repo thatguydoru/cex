@@ -14,9 +14,9 @@
         T value;     \
     }
 
-#define Some(maybe_t, val)           \
-    (maybe_t) {                      \
-        .exists = true, .value = val \
+#define Some(maybe_t, ...)                    \
+    (maybe_t) {                               \
+        .exists = true, .value = __VA__ARGS__ \
     }
 
 #define None(maybe_t)   \
@@ -38,14 +38,14 @@ typedef Maybe(size_t) MaybeSize;
         } value;     \
     }
 
-#define Ok(result_t, val)             \
-    (result_t) {                      \
-        .ok = true, .value.data = val \
+#define Ok(result_t, ...)                     \
+    (result_t) {                              \
+        .ok = true, .value.data = __VA_ARGS__ \
     }
 
-#define Err(result_t, err)              \
-    (result_t) {                        \
-        .ok = false, .value.error = err \
+#define Err(result_t, ...)                      \
+    (result_t) {                                \
+        .ok = false, .value.error = __VA_ARGS__ \
     }
 
 /////////// Panic ///////////
@@ -165,6 +165,6 @@ void char_string_free(CharString* s);
 
 /////////// For LSP Warnings ///////////
 
-#define unused(x) (void)x; 
+#define unused(x) (void)x;
 
 #endif
