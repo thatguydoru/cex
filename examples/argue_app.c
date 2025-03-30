@@ -44,13 +44,12 @@ int main(int argc, const char* argv[]) {
             .parsefn = NULL,
         },
     };
-    ArgueArgConfig args_config = {"args", "some args", false, true};
-    const char* args_out[argc];
+    ArgueArgConfig args_config = {"args", "some args", true, true};
     ArgueParseResult res =
-        argue_parse_flat(args_out, description, argv, argc, flags, arrsize(flags), &args_config);
+        argue_parse_flat(description, argv, argc, flags, arrsize(flags), &args_config);
 
     if (!res.ok) {
-        if (res.value.error != ArgueParsePrintHelp) {
+        if (res.value.error.tag != ArgueParsePrintHelp) {
             eprintln("bruh");
             return 1;
         }
@@ -60,9 +59,11 @@ int main(int argc, const char* argv[]) {
     if (conf.str) {
         printf("str: %s\n", conf.str);
     }
-    for (size_t i = 0; i < res.value.data; i++) {
-        puts(args_out[i]);
+    for (size_t i = 0; i < res.value.data.size; i++) {
+        puts(res.value.data.items[i]);
     }
+
+    dynarray_free(&res.value.data);
 
     return 0;
 }

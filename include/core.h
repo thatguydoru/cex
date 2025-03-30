@@ -14,9 +14,9 @@
         T value;     \
     }
 
-#define Some(maybe_t, ...)                    \
-    (maybe_t) {                               \
-        .exists = true, .value = __VA__ARGS__ \
+#define Some(maybe_t, ...)                   \
+    (maybe_t) {                              \
+        .exists = true, .value = __VA_ARGS__ \
     }
 
 #define None(maybe_t)   \
@@ -24,8 +24,7 @@
         .exists = false \
     }
 
-typedef Maybe(size_t) MaybeIndex;
-typedef Maybe(size_t) MaybeSize;
+typedef Maybe(size_t) MaybeUsize;
 
 /////////// Result ///////////
 
@@ -66,6 +65,10 @@ typedef Maybe(size_t) MaybeSize;
         size_t size;     \
         size_t capacity; \
     }
+
+typedef DynArray(int) IntArray;
+typedef DynArray(float) FloatArray;
+typedef DynArray(const char*) CharStrArray;
 
 #define dynarray_with_capacity(T, arr, cap)                                \
     {                                                                      \
@@ -149,10 +152,12 @@ void char_string_resize(CharString* s);
 void char_string_concat_inplace(CharString* dest, const CharString* src);
 CharString char_string_concat(const CharString* a, const CharString* b);
 bool char_string_eq(const CharString* a, const CharString* b);
-MaybeIndex char_string_find(const CharString* s, const char pat[], size_t patlen);
-MaybeIndex char_string_rfind(const CharString* s, const char pat[], size_t patlen);
+MaybeUsize char_string_find(const CharString* s, const char pat[], size_t patlen);
+MaybeUsize char_string_rfind(const CharString* s, const char pat[], size_t patlen);
 size_t char_string_to_buffer(const CharString* s, char out[], size_t size);
 void char_string_free(CharString* s);
+
+const char* rstrstr(const char* haystack, const char needle[]);
 
 /////////// Stack-allocated Array Utilities ///////////
 

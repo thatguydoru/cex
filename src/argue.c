@@ -10,18 +10,6 @@
 typedef const char* PrefixedKey;
 typedef const char* StrippedKey;
 
-const char* rstrstr(const char* haystack, const char needle[]) {
-    size_t needlesz = strlen(needle);
-    for (size_t i = strlen(haystack); i > 0; i--) {
-        const char* ptr = &haystack[i - 1];
-        if (!strncmp(ptr, needle, needlesz)) {
-            return ptr;
-        }
-    }
-
-    return NULL;
-}
-
 void print_flag_help_full(
     const char* name,
     const char* shorthand,
@@ -56,7 +44,6 @@ void print_help_flat(
 ) {
     puts(description);
     puts("\nUSAGE:");
-    bin = rstrstr(bin, "/") + sizeof(char);
     if (config) {
         printf("  %s [FLAGS] [ARGS]\n\n", bin);
         puts("ARGS:");
@@ -110,15 +97,15 @@ const ArgueFlag* get_flag(StrippedKey key, const ArgueFlag flags[], size_t flags
     return NULL;
 }
 
-MaybeIndex get_first_unnamed_flag_index(const ArgueFlag flags[], size_t flagsz) {
+MaybeUsize get_first_unnamed_flag_index(const ArgueFlag flags[], size_t flagsz) {
     for (size_t i = 0; i < flagsz; i++) {
         const ArgueFlag* flag = &flags[i];
         if (!flag->name) {
-            return Some(MaybeIndex, i);
+            return Some(MaybeUsize, i);
         }
     }
 
-    return None(MaybeIndex);
+    return None(MaybeUsize);
 }
 
 const char* get_duplicate_flag_name(const ArgueFlag flags[], size_t flagsz) {
@@ -142,15 +129,15 @@ const char* get_duplicate_flag_name(const ArgueFlag flags[], size_t flagsz) {
     return NULL;
 }
 
-MaybeIndex get_first_flag_without_out(const ArgueFlag flags[], size_t flagsz) {
+MaybeUsize get_first_flag_without_out(const ArgueFlag flags[], size_t flagsz) {
     for (size_t i = 0; i < flagsz; i++) {
         const ArgueFlag* flag = &flags[i];
         if (!flag->out) {
-            return Some(MaybeIndex, i);
+            return Some(MaybeUsize, i);
         }
     }
 
-    return None(MaybeIndex);
+    return None(MaybeUsize);
 }
 
 bool has_help_flag_defined(const char* const argv[], size_t argc) {
@@ -172,7 +159,7 @@ ArgueParseResult argue_parse_flat(
     size_t flagsz,
     const ArgueArgConfig* config
 ) {
-    MaybeIndex unnamed_idx = get_first_unnamed_flag_index(flags, flagsz);
+    MaybeUsize unnamed_idx = get_first_unnamed_flag_index(flags, flagsz);
     if (unnamed_idx.exists) {
         panicf("argue_parse_flat: flag #%zu is unnamed.\n", unnamed_idx.value + 1);
     }
@@ -180,22 +167,23 @@ ArgueParseResult argue_parse_flat(
     if (duplicate_name) {
         panicf("argue_parse_flat: \"%s\" is a duplicate name/shorthand.\n", duplicate_name);
     }
-    MaybeIndex no_out = get_first_flag_without_out(flags, flagsz);
+    MaybeUsize no_out = get_first_flag_without_out(flags, flagsz);
     if (no_out.exists) {
         panicf("argue_parse_flat: flag #%zu has no out variable.\n", no_out.value);
     }
 
-    const char* bin = argv[0];
+    const char* bin = rstrstr(argv[0], "/") + sizeof(char);
     if (argc == 1 || has_help_flag_defined(argv, argc)) {
         print_help_flat(bin, description, flags, flagsz, config);
         return Err(ArgueParseResult, {ArgueParsePrintHelp, {0}});
     }
 
-    const char* flag_keys[argc];
-    size_t flag_keysz = 0;
-    const char* flag_values[argc];
-    size_t flag_valuesz = 0;
-    size_t arg_valuesz = 0;
+    CharStrArray flag_keys;
+    dynarray_default(char*, flag_keys);
+    CharStrArray flag_values;
+    dynarray_default(char*, flag_values);
+    CharStrArray args_out;
+    dynarray_default(char*, args_out);
 
     // sort into flag keys and values, and args
     for (size_t i = 1; i < argc; i++) {
@@ -210,41 +198,43 @@ ArgueParseResult argue_parse_flat(
                     {ArgueParseFlagDoesNotExist, .inner.flag_does_not_exist = argv_arg}
                 );
             }
-            flag_keys[flag_keysz++] = key;
+            dynarray_push(&flag_keys, key);
             size_t next = i + 1;
             if (next < argc && !is_flag_key(argv[next]) && flag->parsefn) {
-                flag_values[flag_valuesz] = argv[next];
+                dynarray_push(&flag_values, argv[next]);
                 i++;
             } else {
-                flag_values[flag_valuesz] = NULL;
+                dynarray_push(&flag_values, NULL);
             }
-            flag_valuesz++;
-        } else if (args_out) {
-            args_out[arg_valuesz++] = argv_arg;
+        } else {
+            dynarray_push(&args_out, argv_arg);
         }
     }
-    assert(flag_keysz == flag_valuesz);
+    assert(flag_keys.size == flag_values.size);
 
-    if (!config->variadic && arg_valuesz > 1) {
+    if (!config->variadic && args_out.size > 1) {
         argue_eprintln("too many arguments");
-        return Err(ArgueParseResult, {ArgueParseArgsTooMany, .inner.args_too_many = arg_valuesz});
+        return Err(ArgueParseResult, {ArgueParseArgsTooMany, .inner.args_too_many = args_out.size});
     }
-    if (config->required && arg_valuesz == 0) {
+    if (config->required && args_out.size == 0) {
         argue_eprintf("%s: missing argument\n", config->name);
         return Err(ArgueParseResult, {ArgueParseArgsMissingValue, {0}});
     }
 
     // evaluate flags
     if (flags) {
-        for (size_t i = 0; i < flag_keysz; i++) {
-            StrippedKey key = flag_keys[i];
-            const char* value = flag_values[i];
+        for (size_t i = 0; i < flag_keys.size; i++) {
+            StrippedKey key = flag_keys.items[i];
+            const char* value = flag_values.items[i];
             const ArgueFlag* flag = get_flag(key, flags, flagsz);
             assert(flag);
             if (flag->parsefn) {
                 if (!value) {
                     argue_eprintf("%s: missing value\n", flag->name);
-                    return Err(ArgueParseResult, {ArgueParseFlagMissingValue, .inner.flag_missing_value = flag});
+                    return Err(
+                        ArgueParseResult,
+                        {ArgueParseFlagMissingValue, .inner.flag_missing_value = flag}
+                    );
                 }
                 if (!flag->parsefn(flag->out, bin, flag->name, value)) {
                     return Err(ArgueParseResult, {ArgueParseParseFnFail, {0}});
@@ -255,7 +245,10 @@ ArgueParseResult argue_parse_flat(
         }
     }
 
-    return Ok(ArgueParseResult, arg_valuesz);
+    dynarray_free(&flag_keys);
+    dynarray_free(&flag_values);
+
+    return Ok(ArgueParseResult, args_out);
 }
 
 ////////// Default parser implementations //////////

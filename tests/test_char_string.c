@@ -13,7 +13,7 @@ void test_equal(void) {
 
 void test_find(void) {
     CharString a = char_string_new("he3333llo");
-    MaybeIndex idx = char_string_find(&a, "ll", 2);
+    MaybeUsize idx = char_string_find(&a, "ll", 2);
     assert(idx.exists);
     assert(idx.value == 6);
 
@@ -23,7 +23,7 @@ void test_find(void) {
 
 void test_rfind(void) {
     CharString a = char_string_new("hellolleh");
-    MaybeIndex idx = char_string_rfind(&a, "ll", 2);
+    MaybeUsize idx = char_string_rfind(&a, "ll", 2);
     assert(idx.exists);
     assert(idx.value == 5);
 

@@ -46,7 +46,7 @@ typedef struct {
     } inner;
 } ArgueParseError;
 
-typedef Result(size_t, ArgueParseError) ArgueParseResult;
+typedef Result(CharStrArray, ArgueParseError) ArgueParseResult;
 
 ArgueParseResult argue_parse_flat(
     const char description[],
