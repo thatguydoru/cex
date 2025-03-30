@@ -59,20 +59,20 @@ void print_help_flat(
     bin = rstrstr(bin, "/");
     if (config) {
         printf("  %s [FLAGS] [ARGS]\n\n", bin);
+        puts("ARGS:");
+        if (config->required && config->variadic) {
+            printf("  +%s...%*s\n", config->name, PADS + 3, config->description);
+        } else if (config->variadic) {
+            printf("  %s...%*s\n", config->name, PADS + 4, config->description);
+        } else if (config->required) {
+            printf("  +%*s%s\n", -(PADS + 1), config->name, config->description);
+        } else {
+            printf("  %*s%s\n", -(PADS + 2), config->name, config->description);
+        }
+        putchar('\n');
     } else {
         printf("  %s [FLAGS]\n\n", bin);
     }
-    puts("ARGS:");
-    if (config->required && config->variadic) {
-        printf("  +%s...%*s\n", config->name, PADS + 3, config->description);
-    } else if (config->variadic) {
-        printf("  %s...%*s\n", config->name, PADS + 4, config->description);
-    } else if (config->required) {
-        printf("  +%*s%s\n", -(PADS + 1), config->name, config->description);
-    } else {
-        printf("  %*s%s\n", -(PADS + 2), config->name, config->description);
-    }
-    putchar('\n');
     print_flags_help(flags, flagsz);
 }
 
