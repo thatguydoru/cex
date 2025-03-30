@@ -1,68 +1,85 @@
+#include <assert.h>
 #include <errno.h>
+#include <float.h>
+#include <limits.h>
 
 #include "argue.h"
 
-void argue_print_help(const char* description, const ArgueFlag flags[], size_t flagsz) {
-    int pads = 10;
-    printf("%s\n\n", description);
+#define PADS 20
+
+typedef const char* PrefixedKey;
+typedef const char* StrippedKey;
+
+void print_flag_help_full(
+    StrippedKey name,
+    const char* shorthand,
+    const char* description,
+    int pads
+) {
+    int rpad = strlen(name) - pads + 3;
+    printf("  --%s, -%*s%s\n", name, rpad, shorthand, description);
+}
+
+void print_flags_help(const ArgueFlag flags[], size_t flagsz) {
+    puts("FLAGS:");
     for (size_t i = 0; i < flagsz; i++) {
         const ArgueFlag* flag = &flags[i];
-        if (flag->shorthand) {
-            int padding = (int)strlen(flag->name) - pads + 3;  // +3 since there is the --
-            printf("  --%s, -%*s %s\n", flag->name, padding, flag->shorthand, flag->description);
+        if (flag->shorthand && flag->description) {
+            print_flag_help_full(flag->name, flag->shorthand, flag->description, PADS);
+        } else if (!flag->shorthand && flag->description) {
+            printf("  --%*s%s\n", -PADS, flag->name, flag->description);
         } else {
-            printf("  --%*s %s\n", -pads, flag->name, flag->description);
+            printf("  --%s\n", flag->name);
         }
     }
+    print_flag_help_full("help", "h", "print this help information", PADS);
 }
 
-bool is_short_key(const char* s) {
-    return s[0] == '-' && s[1] != '-';
+void print_help_flat(
+    const char* bin,
+    const char* description,
+    const ArgueFlag flags[],
+    size_t flagsz,
+    const ArgueArgConfig* config
+) {
+    puts(description);
+    puts("\nUSAGE:");
+    if (config) {
+        printf("  %s [FLAGS] [ARGS]\n\n", bin);
+    } else {
+        printf("  %s [FLAGS]\n\n", bin);
+    }
+    printf("ARGS:\n  %*s%s\n\n", -(PADS + 2), config->name, config->description);
+    print_flags_help(flags, flagsz);
 }
 
-bool is_long_key(const char* s) {
-    return s[0] == '-' && s[1] == '-';
+bool is_flag_key_longhand(PrefixedKey key) {
+    return key && key[0] == '-' && key[1] == '-';
 }
 
-bool is_flag_key(const char* s) {
-    return is_long_key(s) || is_short_key(s);
+bool is_flag_key_shorthand(PrefixedKey key) {
+    return key && key[0] == '-' && key[1] != '-';
 }
 
-const char* strip_arg_prefix(const char* s) {
-    return is_long_key(s) ? &s[2] : is_short_key(s) ? &s[1] : s;
+bool is_flag_key(PrefixedKey key) {
+    return is_flag_key_longhand(key) || is_flag_key_shorthand(key);
 }
 
-ArgueArgArray argue_get_args(size_t argc, char* argv[]) {
-    ArgueArgArray args;
-    dynarray_default(ArgueArg, args);
-
-    for (size_t i = 1; i < argc; i++) {
-        ArgueArg arg = {0};
-        const char* argstr = argv[i];
-        if (is_flag_key(argstr)) {
-            arg.key = strip_arg_prefix(argstr);
-            size_t next = i + 1;
-            if (next < argc && !is_flag_key(argv[next])) {
-                arg.value = argv[next];
-                i++;
-            }
-        } else {
-            arg.value = argstr;
-        }
-        dynarray_push(&args, arg);
+StrippedKey strip_flag_key_prefix(PrefixedKey key) {
+    if (is_flag_key_longhand(key)) {
+        return &key[2];
+    }
+    if (is_flag_key_shorthand(key)) {
+        return &key[1];
     }
 
-    return args;
+    return key;
 }
 
-bool argue_is_flag_name(const char* name, const char* longname, const char* shorthand) {
-    return (longname && !strcmp(name, longname)) || (shorthand && !strcmp(name, shorthand));
-}
-
-const ArgueFlag* argue_get_flag(const char* argkey, const ArgueFlag flags[], size_t flagsz) {
+const ArgueFlag* get_flag(StrippedKey key, const ArgueFlag flags[], size_t flagsz) {
     for (size_t i = 0; i < flagsz; i++) {
         const ArgueFlag* flag = &flags[i];
-        if (argue_is_flag_name(argkey, flag->name, flag->shorthand)) {
+        if (!strcmp(key, flag->name) || (flag->shorthand && !strcmp(key, flag->shorthand))) {
             return flag;
         }
     }
@@ -70,10 +87,53 @@ const ArgueFlag* argue_get_flag(const char* argkey, const ArgueFlag flags[], siz
     return NULL;
 }
 
-bool is_name_in_flags(const char* name, const ArgueFlag flags[], size_t flagsz) {
+MaybeIndex get_first_unnamed_flag_index(const ArgueFlag flags[], size_t flagsz) {
     for (size_t i = 0; i < flagsz; i++) {
         const ArgueFlag* flag = &flags[i];
-        if (argue_is_flag_name(name, flag->name, flag->shorthand)) {
+        if (!flag->name) {
+            return Some(MaybeIndex, i);
+        }
+    }
+
+    return None(MaybeIndex);
+}
+
+const char* get_duplicate_flag_name(const ArgueFlag flags[], size_t flagsz) {
+    for (size_t i = 0; i < flagsz; i++) {
+        const ArgueFlag* flag = &flags[i];
+        for (size_t j = i + 1; j < flagsz; j++) {
+            if (i == j) {
+                break;
+            }
+            const ArgueFlag* next_flag = &flags[j];
+            if (flag->name && next_flag->name && !strcmp(flag->name, next_flag->name)) {
+                return flag->name;
+            }
+            if (flag->shorthand && next_flag->shorthand &&
+                !strcmp(flag->shorthand, next_flag->shorthand)) {
+                return flag->shorthand;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+MaybeIndex get_first_flag_without_out(const ArgueFlag flags[], size_t flagsz) {
+    for (size_t i = 0; i < flagsz; i++) {
+        const ArgueFlag* flag = &flags[i];
+        if (!flag->out) {
+            return Some(MaybeIndex, i);
+        }
+    }
+
+    return None(MaybeIndex);
+}
+
+bool has_help_flag_defined(const char* const argv[], size_t argc) {
+    for (size_t i = 0; i < argc; i++) {
+        const char* s = strip_flag_key_prefix(argv[i]);
+        if (!strcmp(s, "help") || !strcmp(s, "h")) {
             return true;
         }
     }
@@ -81,55 +141,127 @@ bool is_name_in_flags(const char* name, const ArgueFlag flags[], size_t flagsz) 
     return false;
 }
 
-const ArgueArg* argue_get_first_unknown_arg(
-    const ArgueArgArray* args,
+ArgueParseResult argue_parse_flat(
+    const char* args_out[],
+    const char* description,
+    const char* const argv[],
+    size_t argc,
     const ArgueFlag flags[],
-    size_t flagsz
+    size_t flagsz,
+    const ArgueArgConfig* config
 ) {
-    for (size_t i = 0; i < args->size; i++) {
-        const ArgueArg* arg = &args->items[i];
-        if (!arg->key) {
-            continue;
+    MaybeIndex unnamed_idx = get_first_unnamed_flag_index(flags, flagsz);
+    if (unnamed_idx.exists) {
+        panicf("argue_parse_flat: flag #%zu is unnamed.\n", unnamed_idx.value + 1);
+    }
+    const char* duplicate_name = get_duplicate_flag_name(flags, flagsz);
+    if (duplicate_name) {
+        panicf("argue_parse_flat: \"%s\" is a duplicate name/shorthand.\n", duplicate_name);
+    }
+    MaybeIndex no_out = get_first_flag_without_out(flags, flagsz);
+    if (no_out.exists) {
+        panicf("argue_parse_flat: flag #%zu has no out variable.\n", no_out.value);
+    }
+
+    const char* bin = argv[0];
+    if (argc == 1 || has_help_flag_defined(argv, argc)) {
+        print_help_flat(bin, description, flags, flagsz, config);
+        return Err(ArgueParseResult, ArgueParsePrintHelp);
+    }
+
+    const char* flag_keys[argc];
+    size_t flag_keysz = 0;
+    const char* flag_values[argc];
+    size_t flag_valuesz = 0;
+    size_t arg_valuesz = 0;
+
+    // sort into flag keys and values, and args
+    for (size_t i = 1; i < argc; i++) {
+        const char* argv_arg = argv[i];
+        if (flags && is_flag_key(argv_arg)) {
+            StrippedKey key = strip_flag_key_prefix(argv_arg);
+            const ArgueFlag* flag = get_flag(key, flags, flagsz);
+            if (!flag) {
+                argue_eprintf("%s is not a flag\n", key);
+                return Err(ArgueParseResult, ArgueParseFlagDoesNotExist);
+            }
+            flag_keys[flag_keysz++] = key;
+            size_t next = i + 1;
+            if (next < argc && !is_flag_key(argv[next]) && flag->parsefn) {
+                flag_values[flag_valuesz] = argv[next];
+                i++;
+            } else {
+                flag_values[flag_valuesz] = NULL;
+            }
+            flag_valuesz++;
+        } else if (args_out) {
+            args_out[arg_valuesz++] = argv_arg;
         }
-        if (!is_name_in_flags(arg->key, flags, flagsz)) {
-            return arg;
+    }
+    assert(flag_keysz == flag_valuesz);
+
+    // evaluate flags
+    if (flags) {
+        for (size_t i = 0; i < flag_keysz; i++) {
+            StrippedKey key = flag_keys[i];
+            const char* value = flag_values[i];
+            const ArgueFlag* flag = get_flag(key, flags, flagsz);
+            assert(flag);
+            if (flag->parsefn) {
+                if (!value) {
+                    argue_eprintf("%s: missing value\n", flag->name);
+                    return Err(ArgueParseResult, ArgueParseFlagMissingValue);
+                }
+                if (!flag->parsefn(flag->out, bin, flag->name, value)) {
+                    return Err(ArgueParseResult, ArgueParseParseFnFail);
+                }
+            } else {
+                *((bool*)flag->out) = true;
+            }
         }
     }
 
-    return NULL;
+    return Ok(ArgueParseResult, arg_valuesz);
 }
 
 ////////// Default parser implementations //////////
 
-int argue_parse_int(void* out, const char* value) {
+bool argue_parse_int(void* out, const char bin[], const char flag_name[], const char value[]) {
     errno = 0;
     char* end = NULL;
     *((int*)out) = strtol(value, &end, 10);
     if (end != &value[strlen(value)]) {
-        return ArgueParseNumWrongFmt;
+        argue_eprintf("%s: %s is not an int\n", flag_name, value);
+        return false;
     }
     if (errno == ERANGE) {
-        return ArgueParseNumOutOfRange;
+        argue_eprintf("%s: value must be between %d and %d\n", flag_name, INT_MIN, INT_MAX);
+        return false;
     }
 
-    return ArgueParseNumOk;
+    return true;
 }
 
-int argue_parse_float(void* out, const char* value) {
+bool argue_parse_float(void* out, const char bin[], const char flag_name[], const char value[]) {
     errno = 0;
     char* end = NULL;
     *((float*)out) = strtof(value, &end);
     if (end != &value[strlen(value)]) {
-        return ArgueParseNumWrongFmt;
+        argue_eprintf("%s: %s is not a float\n", flag_name, value);
+        return true;
     }
     if (errno == ERANGE) {
-        return ArgueParseNumOutOfRange;
+        argue_eprintf("%s: value must be between %.2f and %.2f\n", flag_name, FLT_MIN, FLT_MAX);
     }
 
-    return ArgueParseNumOk;
+    return true;
 }
 
-int argue_parse_str(void* out, const char* value) {
-    *((char**)out) = (char*)value;
-    return 0;
+bool argue_parse_string(void* out, const char bin[], const char flag_name[], const char value[]) {
+    unused(bin);
+    unused(flag_name);
+
+    *((const char**)out) = value;
+
+    return true;
 }

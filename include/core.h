@@ -25,6 +25,7 @@
     }
 
 typedef Maybe(size_t) MaybeIndex;
+typedef Maybe(size_t) MaybeSize;
 
 /////////// Result ///////////
 
@@ -52,7 +53,7 @@ typedef Maybe(size_t) MaybeIndex;
 #define panicf(fmt, ...)                                                         \
     {                                                                            \
         fprintf(stderr, "[PANIC] %s:%d: " fmt, __FILE__, __LINE__, __VA_ARGS__); \
-        _Exit(1);                                                                \
+        _Exit(-1);                                                               \
     }
 
 #define panic(message) panicf("%s\n", (message))
@@ -155,11 +156,15 @@ void char_string_free(CharString* s);
 
 /////////// Stack-allocated Array Utilities ///////////
 
-#define arrsize(arr) sizeof(arr) / sizeof(arr[0])
+#define arrsize(arr) (sizeof(arr) / sizeof(arr[0]))
 
 /////////// IO ///////////
 
-#define eprintf(fmt, ...) fprintf(stderr, "[ERROR] " fmt, __VA_ARGS__)
+#define eprintf(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
 #define eprintln(message) eprintf("%s", message)
+
+/////////// For LSP Warnings ///////////
+
+#define unused(x) (void)x; 
 
 #endif

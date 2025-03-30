@@ -1,60 +1,68 @@
 #include "argue.h"
 
 typedef struct {
-    int foo;
-    float bar;
-} Conf;
+    int numi;
+    float numf;
+    char* str;
+    bool boolean;
+} Flags;
 
-const ArgueFlag flags[] = {
-    {
-        .name = "foo",
-        .description = "a parser for foo",
-        .shorthand = "f",
-        .parse = &argue_parse_int,
-    },
-    {
-        .name = "bar",
-        .description = "the bar",
-        .shorthand = NULL,
-        .parse = &argue_parse_float,
-    }
-};
+int main(int argc, const char* argv[]) {
+    Flags conf = {0};
+    const char* description = "some tool description";
+    const ArgueFlag flags[] = {
+        {
+            // --numi <int> or -n <int>
+            .name = "numi",
+            .shorthand = "n",
+            .description = "takes in an int",
+            .out = &conf.numi,
+            .parsefn = &argue_parse_int,
+        },
+        {
+            // --numf <float>
+            .name = "numf",
+            .shorthand = NULL,
+            .description = "takes in a float",
+            .out = &conf.numf,
+            .parsefn = &argue_parse_float,
+        },
+        {
+            // --str <char string>
+            .name = "str",
+            .shorthand = NULL,
+            .description = NULL,
+            .out = &conf.str,
+            .parsefn = &argue_parse_string,
+        },
+        {
+            // --boolean
+            .name = "boolean",
+            .shorthand = NULL,
+            .description = "takes in a bool",
+            .out = &conf.boolean,
+            .parsefn = NULL,
+        },
+    };
+    ArgueArgConfig args_config = {"args", "some args"};
+    const char* args_out[argc];
+    ArgueParseResult res =
+        argue_parse_flat(args_out, description, argv, argc, flags, arrsize(flags), &args_config);
 
-int main(int argc, char* argv[]) {
-    if (argc == 1) {
-        argue_print_help("some random description for this tool", flags, arrsize(flags));
+    if (!res.ok) {
+        if (res.value.error != ArgueParsePrintHelp) {
+            eprintln("bruh");
+            return 1;
+        }
         return 0;
     }
-
-    Conf conf = {0};
-    ArgueArgArray args = argue_get_args(argc, argv);
-
-    const ArgueArg* unknown = argue_get_first_unknown_arg(&args, flags, arrsize(flags));
-    if (unknown) {
-        eprintf("--%s is not a flag\n", unknown->key);
-        return 1;
+    printf("numi: %d, numf: %f, boolean: %d\n", conf.numi, conf.numf, conf.boolean);
+    if (conf.str) {
+        printf("str: %s\n", conf.str);
     }
-
-    for (size_t i = 0; i < args.size; i++) {
-        ArgueArg* arg = &args.items[i];
-        const ArgueFlag* flag = argue_get_flag(arg->key, flags, arrsize(flags));
-        if (argue_is_flag_name("foo", flag->name, flag->shorthand)) {
-            int res = flag->parse(&conf.foo, arg->value);
-            if (res) {
-                eprintln("wrong argument for foo");
-                return 1;
-            }
-        }
-        if (argue_is_flag_name("bar", flag->name, flag->shorthand)) {
-            int res = flag->parse(&conf.bar, arg->value);
-            if (res) {
-                eprintln("wrong argument for bar");
-                return 1;
-            }
-        }
+    for (size_t i = 0; i < res.value.data; i++) {
+        puts(args_out[i]);
     }
-
-    printf("%d, %f\n", conf.foo, conf.bar);
 
     return 0;
 }

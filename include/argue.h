@@ -3,42 +3,47 @@
 
 #include "core.h"
 
-typedef int (*ArgueParseFn)(void* out, const char* value);
+#define argue_eprintf(fmt, ...) eprintf("%s: " fmt, bin, __VA_ARGS__)
+#define argue_eprintln(message) argue_eprintf(bin, "%s\n", message)
+
+typedef bool (*ArgueParseFn)(void* out, const char bin[], const char flag_name[], const char value[]);
+
+typedef struct {
+    const char* name;
+    const char* shorthand;
+    const char* description;
+    void* out;
+    const ArgueParseFn parsefn;
+} ArgueFlag;
 
 typedef struct {
     const char* name;
     const char* description;
-    const char* shorthand;
-    ArgueParseFn parse;
-} ArgueFlag;
-
-typedef struct {
-    const char* key;
-    const char* value;
-} ArgueArg;
-
-typedef DynArray(ArgueArg) ArgueArgArray;
-
-void argue_print_help(const char* description, const ArgueFlag flags[], size_t flagsz);
-ArgueArgArray argue_get_args(size_t argc, char* argv[]);
-bool argue_is_flag_name(const char* name, const char* flagname, const char* shorthand);
-const ArgueFlag* argue_get_flag(const char* argkey, const ArgueFlag flags[], size_t flagsz);
-const ArgueArg* argue_get_first_unknown_arg(
-    const ArgueArgArray* args,
-    const ArgueFlag flags[],
-    size_t flagsz
-);
-
-////////// Default parsers ////////
+} ArgueArgConfig;
 
 typedef enum {
-    ArgueParseNumOk,
-    ArgueParseNumWrongFmt,
-    ArgueParseNumOutOfRange,
-} ArgueParseNumResult;
+    ArgueParsePrintHelp,
+    ArgueParseParseFnFail,
+    ArgueParseFlagDoesNotExist,
+    ArgueParseFlagMissingValue,
+} ArgueParseError;
 
-int argue_parse_int(void* out, const char* value);
-int argue_parse_float(void* out, const char* value);
-int argue_parse_str(void* out, const char* value);
+typedef Result(size_t, ArgueParseError) ArgueParseResult;
+
+ArgueParseResult argue_parse_flat(
+    const char* args_out[],
+    const char description[],
+    const char* const argv[],
+    size_t argc,
+    const ArgueFlag flags[],
+    size_t flagsz,
+    const ArgueArgConfig* config
+);
+
+////////// Default parsers  ////////
+
+bool argue_parse_int(void* out, const char bin[], const char flag_name[], const char value[]);
+bool argue_parse_float(void* out, const char bin[], const char flag_name[], const char value[]);
+bool argue_parse_string(void* out, const char bin[], const char flag_name[], const char value[]);
 
 #endif
