@@ -10,8 +10,20 @@
 typedef const char* PrefixedKey;
 typedef const char* StrippedKey;
 
+const char* rstrstr(const char* haystack, const char needle[]) {
+    size_t needlesz= strlen(needle);
+    for (size_t i = strlen(haystack); i > 0; i--) {
+        const char* ptr = &haystack[i - 1];
+        if (!strncmp(ptr, needle, needlesz)) {
+            return ptr + sizeof(char);
+        }
+    }
+
+    return NULL;
+}
+
 void print_flag_help_full(
-    StrippedKey name,
+    const char* name,
     const char* shorthand,
     const char* description,
     int pads
@@ -44,6 +56,7 @@ void print_help_flat(
 ) {
     puts(description);
     puts("\nUSAGE:");
+    bin = rstrstr(bin, "/");
     if (config) {
         printf("  %s [FLAGS] [ARGS]\n\n", bin);
     } else {
