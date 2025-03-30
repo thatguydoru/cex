@@ -40,7 +40,7 @@ void print_help_flat(
     const char* description,
     const ArgueFlag flags[],
     size_t flagsz,
-    const ArgueArgConfig* config
+    const ArgueArgsConfig* config
 ) {
     puts(description);
     puts("\nUSAGE:");
@@ -157,7 +157,7 @@ ArgueParseResult argue_parse_flat(
     size_t argc,
     const ArgueFlag flags[],
     size_t flagsz,
-    const ArgueArgConfig* config
+    const ArgueArgsConfig* config
 ) {
     MaybeUsize unnamed_idx = get_first_unnamed_flag_index(flags, flagsz);
     if (unnamed_idx.exists) {
@@ -169,7 +169,7 @@ ArgueParseResult argue_parse_flat(
     }
     MaybeUsize no_out = get_first_flag_without_out(flags, flagsz);
     if (no_out.exists) {
-        panicf("argue_parse_flat: flag #%zu has no out variable.\n", no_out.value);
+        panicf("argue_parse_flat: flag #%zu has no out variable.\n", no_out.value + 1);
     }
 
     const char* bin = rstrstr(argv[0], "/") + sizeof(char);

@@ -26,7 +26,7 @@ typedef struct {
     const char* description;
     bool variadic;
     bool required;
-} ArgueArgConfig;
+} ArgueArgsConfig;
 
 typedef enum {
     ArgueParsePrintHelp,
@@ -54,7 +54,7 @@ ArgueParseResult argue_parse_flat(
     size_t argc,
     const ArgueFlag flags[],
     size_t flagsz,
-    const ArgueArgConfig* config
+    const ArgueArgsConfig* config
 );
 
 ////////// Default parsers  ////////

@@ -24,11 +24,11 @@
         .exists = false \
     }
 
-#define unwrap_maybe(m, out)          \
-    if (m.exists) {                   \
-        out = &m.value;               \
-    } else {                          \
-        panic("unwrapped on a None"); \
+#define unwrap_some(m, out)                        \
+    if (m.exists) {                                \
+        out = &m.value;                            \
+    } else {                                       \
+        panic("unwrap_some: unwrapped on a None"); \
     }
 
 typedef Maybe(size_t) MaybeUsize;
@@ -54,11 +54,18 @@ typedef Maybe(size_t) MaybeUsize;
         .ok = false, .value.error = __VA_ARGS__ \
     }
 
-#define unwrap_result(r, out)         \
-    if (r.ok) {                       \
-        out = &r.value.data;          \
-    } else {                          \
-        panic("unwrapped on an Err"); \
+#define unwrap_ok(r, out)                        \
+    if (r.ok) {                                  \
+        out = &r.value.data;                     \
+    } else {                                     \
+        panic("unwrap_ok: unwrapped on an Err"); \
+    }
+
+#define unwrap_err(r, out)                       \
+    if (!r.ok) {                                 \
+        out = &r.value.error;                    \
+    } else {                                     \
+        panic("unwrap_err: unwrapped on an Ok"); \
     }
 
 /////////// Panic ///////////

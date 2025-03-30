@@ -44,7 +44,7 @@ int main(int argc, const char* argv[]) {
             .parsefn = NULL,
         },
     };
-    ArgueArgConfig args_config = {"args", "some args", true, true};
+    ArgueArgsConfig args_config = {"args", "some args", true, true};
     ArgueParseResult res =
         argue_parse_flat(description, argv, argc, flags, arrsize(flags), &args_config);
 
@@ -62,7 +62,7 @@ int main(int argc, const char* argv[]) {
     }
 
     CharStrArray* args;
-    unwrap_result(res, args);
+    unwrap_ok(res, args);
     for (size_t i = 0; i < args->size; i++) {
         puts(args->items[i]);
     }
