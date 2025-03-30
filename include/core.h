@@ -24,6 +24,13 @@
         .exists = false \
     }
 
+#define unwrap_maybe(m, out)          \
+    if (m.exists) {                   \
+        out = &m.value;               \
+    } else {                          \
+        panic("unwrapped on a None"); \
+    }
+
 typedef Maybe(size_t) MaybeUsize;
 
 /////////// Result ///////////
@@ -45,6 +52,13 @@ typedef Maybe(size_t) MaybeUsize;
 #define Err(result_t, ...)                      \
     (result_t) {                                \
         .ok = false, .value.error = __VA_ARGS__ \
+    }
+
+#define unwrap_result(r, out)         \
+    if (r.ok) {                       \
+        out = &r.value.data;          \
+    } else {                          \
+        panic("unwrapped on an Err"); \
     }
 
 /////////// Panic ///////////
@@ -140,7 +154,7 @@ typedef DynArray(const char*) CharStrArray;
 #define max(a, b) ((a) >= (b) ? (a) : (b))
 #define clamp(lo, hi, val) ((lo) > (val) ? (lo) : (hi) < (val) ? (hi) : (val))
 
-/////////// char String ///////////
+/////////// char Str and String utilities ///////////
 
 typedef DynArray(char) CharString;
 

@@ -55,12 +55,16 @@ int main(int argc, const char* argv[]) {
         }
         return 0;
     }
+
     printf("numi: %d, numf: %f, boolean: %d\n", conf.numi, conf.numf, conf.boolean);
     if (conf.str) {
         printf("str: %s\n", conf.str);
     }
-    for (size_t i = 0; i < res.value.data.size; i++) {
-        puts(res.value.data.items[i]);
+
+    CharStrArray* args;
+    unwrap_result(res, args);
+    for (size_t i = 0; i < args->size; i++) {
+        puts(args->items[i]);
     }
 
     dynarray_free(&res.value.data);
