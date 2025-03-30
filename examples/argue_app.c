@@ -44,7 +44,7 @@ int main(int argc, const char* argv[]) {
             .parsefn = NULL,
         },
     };
-    ArgueArgConfig args_config = {"args", "some args"};
+    ArgueArgConfig args_config = {"args", "some args", false, true};
     const char* args_out[argc];
     ArgueParseResult res =
         argue_parse_flat(args_out, description, argv, argc, flags, arrsize(flags), &args_config);

@@ -4,7 +4,7 @@
 #include "core.h"
 
 #define argue_eprintf(fmt, ...) eprintf("%s: " fmt, bin, __VA_ARGS__)
-#define argue_eprintln(message) argue_eprintf(bin, "%s\n", message)
+#define argue_eprintln(message) argue_eprintf("%s\n", message)
 
 typedef bool (*ArgueParseFn)(void* out, const char bin[], const char flag_name[], const char value[]);
 
@@ -19,6 +19,8 @@ typedef struct {
 typedef struct {
     const char* name;
     const char* description;
+    bool variadic;
+    bool required;
 } ArgueArgConfig;
 
 typedef enum {
@@ -26,6 +28,8 @@ typedef enum {
     ArgueParseParseFnFail,
     ArgueParseFlagDoesNotExist,
     ArgueParseFlagMissingValue,
+    ArgueParseArgsTooMany,
+    ArgueParseArgsMissingValue,
 } ArgueParseError;
 
 typedef Result(size_t, ArgueParseError) ArgueParseResult;

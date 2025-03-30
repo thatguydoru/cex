@@ -11,7 +11,7 @@ typedef const char* PrefixedKey;
 typedef const char* StrippedKey;
 
 const char* rstrstr(const char* haystack, const char needle[]) {
-    size_t needlesz= strlen(needle);
+    size_t needlesz = strlen(needle);
     for (size_t i = strlen(haystack); i > 0; i--) {
         const char* ptr = &haystack[i - 1];
         if (!strncmp(ptr, needle, needlesz)) {
@@ -62,7 +62,17 @@ void print_help_flat(
     } else {
         printf("  %s [FLAGS]\n\n", bin);
     }
-    printf("ARGS:\n  %*s%s\n\n", -(PADS + 2), config->name, config->description);
+    puts("ARGS:");
+    if (config->required && config->variadic) {
+        printf("  +%s...%*s\n", config->name, PADS + 3, config->description);
+    } else if (config->variadic) {
+        printf("  %s...%*s\n", config->name, PADS + 4, config->description);
+    } else if (config->required) {
+        printf("  +%*s%s\n", -(PADS + 1), config->name, config->description);
+    } else {
+        printf("  %*s%s\n", -(PADS + 2), config->name, config->description);
+    }
+    putchar('\n');
     print_flags_help(flags, flagsz);
 }
 
@@ -212,6 +222,15 @@ ArgueParseResult argue_parse_flat(
         }
     }
     assert(flag_keysz == flag_valuesz);
+
+    if (!config->variadic && arg_valuesz > 1) {
+        argue_eprintln("too many arguments");
+        return Err(ArgueParseResult, ArgueParseArgsTooMany);
+    }
+    if (config->required && arg_valuesz == 0) {
+        argue_eprintf("%s: missing argument\n", config->name);
+        return Err(ArgueParseResult, ArgueParseArgsMissingValue);
+    }
 
     // evaluate flags
     if (flags) {
