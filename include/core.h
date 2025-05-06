@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef const char* cstr;
-
 /////////// Maybe ///////////
 
 #define Maybe(T)     \
@@ -32,8 +30,6 @@ typedef const char* cstr;
     } else {                                       \
         panic("unwrap_some: unwrapped on a None"); \
     }
-
-typedef Maybe(size_t) MaybeUsize;
 
 /////////// Result ///////////
 
@@ -158,25 +154,6 @@ typedef Maybe(size_t) MaybeUsize;
 #define min(a, b) ((a) <= (b) ? (a) : (b))
 #define max(a, b) ((a) >= (b) ? (a) : (b))
 #define clamp(lo, hi, val) ((lo) > (val) ? (lo) : (hi) < (val) ? (hi) : (val))
-
-/////////// char Str and String utilities ///////////
-
-typedef DynArray(char) CharString;
-typedef DynArray(cstr) CStrArray;
-
-CharString char_string_with_capacity(size_t capacity);
-CharString char_string_default(void);
-CharString char_string_new(cstr str);
-CharString char_string_with_size(cstr str, size_t size);
-void char_string_concat_inplace(CharString* dest, cstr src, size_t size);
-CharString char_string_concat(const CharString* a, cstr src, size_t size);
-bool char_string_eq(const CharString* a, cstr b, size_t size);
-MaybeUsize char_string_find(const CharString* s, cstr str, size_t patsz);
-MaybeUsize char_string_rfind(const CharString* s, cstr str, size_t patsz);
-size_t char_string_to_buffer(const CharString* s, char out[], size_t size);
-void char_string_free(CharString* s);
-
-cstr rstrstr(cstr haystack, cstr needle);
 
 /////////// Stack-allocated Array Utilities ///////////
 
