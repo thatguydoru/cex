@@ -5,10 +5,10 @@
 void test_equal(void) {
     CharString a = char_string_new("hello");
     CharString b = char_string_new("hello");
-    assert(char_string_eq(&a, &b));
+    assert(char_string_eq(&a, b.items, b.size));
 
     b = char_string_new("world");
-    assert(!char_string_eq(&a, &b));
+    assert(!char_string_eq(&a, b.items, b.size));
 }
 
 void test_find(void) {

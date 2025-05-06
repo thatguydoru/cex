@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef const char* cstr;
+
 /////////// Maybe ///////////
 
 #define Maybe(T)     \
@@ -87,10 +89,6 @@ typedef Maybe(size_t) MaybeUsize;
         size_t capacity; \
     }
 
-typedef DynArray(int) IntArray;
-typedef DynArray(float) FloatArray;
-typedef DynArray(const char*) CharStrArray;
-
 #define dynarray_with_capacity(T, arr, cap)                                \
     {                                                                      \
         arr.capacity = cap;                                                \
@@ -103,10 +101,10 @@ typedef DynArray(const char*) CharStrArray;
 
 #define dynarray_default(T, arr) dynarray_with_capacity(T, arr, 8)
 
-#define dynarray_new(T, arr, c_arr, sz)           \
+#define dynarray_new(T, arr, src, sz)           \
     {                                             \
         dynarray_with_capacity(T, arr, sz);       \
-        memcpy(arr.items, c_arr, sz * sizeof(T)); \
+        memcpy(arr.items, src, sz * sizeof(T)); \
         arr.size = sz;                            \
     }
 
@@ -164,21 +162,21 @@ typedef DynArray(const char*) CharStrArray;
 /////////// char Str and String utilities ///////////
 
 typedef DynArray(char) CharString;
+typedef DynArray(cstr) CStrArray;
 
 CharString char_string_with_capacity(size_t capacity);
 CharString char_string_default(void);
-CharString char_string_new(const char str[]);
-CharString char_string_with_size(const char str[], size_t size);
-void char_string_resize(CharString* s);
-void char_string_concat_inplace(CharString* dest, const CharString* src);
-CharString char_string_concat(const CharString* a, const CharString* b);
-bool char_string_eq(const CharString* a, const CharString* b);
-MaybeUsize char_string_find(const CharString* s, const char pat[], size_t patlen);
-MaybeUsize char_string_rfind(const CharString* s, const char pat[], size_t patlen);
+CharString char_string_new(cstr str);
+CharString char_string_with_size(cstr str, size_t size);
+void char_string_concat_inplace(CharString* dest, cstr src, size_t size);
+CharString char_string_concat(const CharString* a, cstr src, size_t size);
+bool char_string_eq(const CharString* a, cstr b, size_t size);
+MaybeUsize char_string_find(const CharString* s, cstr str, size_t patsz);
+MaybeUsize char_string_rfind(const CharString* s, cstr str, size_t patsz);
 size_t char_string_to_buffer(const CharString* s, char out[], size_t size);
 void char_string_free(CharString* s);
 
-const char* rstrstr(const char* haystack, const char needle[]);
+cstr rstrstr(cstr haystack, cstr needle);
 
 /////////// Stack-allocated Array Utilities ///////////
 

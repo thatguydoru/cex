@@ -1,66 +1,59 @@
 #ifndef __CEX_ARGUE_H__
 #define __CEX_ARGUE_H__
 
+/**
+    app := <command> <app> | <command> <args>*
+
+    args := <flag>* <args>*  | <argument>* <args>*
+
+    flag := <longname> | <shortname> | <bundled>
+    longname := --<char>+
+    shortname := -<char>
+    bundled := -<shortname>+
+
+    command := <char>+
+    argument := <char>+
+
+    char := 0x00..0xFF
+*/
+
 #include "core.h"
 
-#define argue_eprintf(fmt, ...) eprintf("%s: " fmt, bin, __VA_ARGS__)
-#define argue_eprintln(message) argue_eprintf("%s\n", message)
+typedef Result(int, int) ArgueSubcommandResult;
 
-typedef bool (*ArgueParseFn)(
-    void* out,
-    const char bin[],
-    const char flag_name[],
-    const char value[]
-);
+typedef ArgueSubcommandResult (*ArgueSubcommandHandler)(int argc, cstr argv[]);
 
 typedef struct {
-    const char* name;
-    const char* shorthand;
-    const char* description;
+    cstr name;
+    cstr description;
+    cstr usage;
+    const ArgueSubcommandHandler handler;
+} ArgueSubcommand;
+
+typedef enum {
+    ArgueFlagInt,
+    ArgueFlagFloat,
+    ArgueFlagCStr,
+} ArgueFlagType;
+
+typedef struct {
+    cstr longname;
+    cstr shortname;
+    ArgueFlagType type;
     void* out;
-    const ArgueParseFn parsefn;
 } ArgueFlag;
 
 typedef struct {
-    const char* name;
-    const char* description;
-    bool variadic;
-    bool required;
-} ArgueArgsConfig;
+    cstr name;
+    cstr usage;
+    cstr description;
+    const ArgueSubcommand* subcommands;
+    size_t subcommandsz;
+    const ArgueFlag* flags;
+    size_t flagsz;
+} ArgueCommand;
 
-typedef enum {
-    ArgueParsePrintHelp,
-    ArgueParseParseFnFail,
-    ArgueParseFlagDoesNotExist,
-    ArgueParseFlagMissingValue,
-    ArgueParseArgsTooMany,
-    ArgueParseArgsMissingValue,
-} ArgueParseErrorTag;
-
-typedef struct {
-    ArgueParseErrorTag tag;
-    union {
-        const char* flag_does_not_exist;
-        const ArgueFlag* flag_missing_value;
-        size_t args_too_many;
-    } inner;
-} ArgueParseError;
-
-typedef Result(CharStrArray, ArgueParseError) ArgueParseResult;
-
-ArgueParseResult argue_parse_flat(
-    const char description[],
-    const char* const argv[],
-    size_t argc,
-    const ArgueFlag flags[],
-    size_t flagsz,
-    const ArgueArgsConfig* config
-);
-
-////////// Default parsers  ////////
-
-bool argue_parse_int(void* out, const char bin[], const char flag_name[], const char value[]);
-bool argue_parse_float(void* out, const char bin[], const char flag_name[], const char value[]);
-bool argue_parse_string(void* out, const char bin[], const char flag_name[], const char value[]);
+void argue_parse(ArgueCommand cmd, int argc, cstr argv[]);
+void argue_print_help(ArgueCommand cmd);
 
 #endif

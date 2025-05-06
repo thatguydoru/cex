@@ -13,40 +13,38 @@ CharString char_string_default(void) {
 
 CharString char_string_with_size(const char str[], size_t size) {
     CharString s;
-    dynarray_new(char, s, str, size);
+    dynarray_new(char, s, str, size + 1);
+    s.items[size] = '\0';
 
     return s;
 }
 
 CharString char_string_new(const char str[]) {
-    return char_string_with_size(str, strlen(str));
+    return char_string_with_size(str, strlen(str) + 1);
 }
 
-void char_string_resize(CharString* s) {
-    dynarray_resize(s);
+void char_string_concat_inplace(CharString* dest, cstr src, size_t size) {
+    dynarray_extend(dest, src, size + 1);
 }
 
-void char_string_concat_inplace(CharString* dest, const CharString* src) {
-    dynarray_extend(dest, src->items, src->size);
-}
-
-CharString char_string_concat(const CharString* a, const CharString* b) {
-    CharString out = char_string_with_capacity(a->capacity + b->capacity);
-    char_string_concat_inplace(&out, a);
-    char_string_concat_inplace(&out, b);
+CharString char_string_concat(const CharString* a, cstr src, size_t size) {
+    CharString out = char_string_with_capacity(a->capacity + size + 1);
+    char_string_concat_inplace(&out, a->items, a->size);
+    char_string_concat_inplace(&out, src, size);
+    out.items[out.size] = '\0';
 
     return out;
 }
 
-bool char_string_eq(const CharString* a, const CharString* b) {
-    if (a->size != b->size) {
+bool char_string_eq(const CharString* a, cstr b, size_t size) {
+    if (a->size != size) {
         return false;
     }
 
-    return !strncmp(a->items, b->items, a->size);
+    return !strncmp(a->items, b, a->size);
 }
 
-MaybeUsize char_string_find(const CharString* s, const char pat[], size_t patlen) {
+MaybeUsize char_string_find(const CharString* s, cstr pat, size_t patlen) {
     if (patlen > s->size) {
         return None(MaybeUsize);
     }
@@ -66,7 +64,7 @@ MaybeUsize char_string_find(const CharString* s, const char pat[], size_t patlen
     return None(MaybeUsize);
 }
 
-MaybeUsize char_string_rfind(const CharString* s, const char pat[], size_t patlen) {
+MaybeUsize char_string_rfind(const CharString* s, cstr pat, size_t patlen) {
     if (patlen > s->size) {
         return None(MaybeUsize);
     }
@@ -99,11 +97,11 @@ void char_string_free(CharString* s) {
 
 ////////// C string utilities ////////// 
  
-const char* rstrstr(const char* haystack, const char needle[]) {
-    size_t needlesz = strlen(needle);
+cstr rstrstr(cstr haystack, cstr needle) {
+    size_t sz = strlen(needle);
     for (size_t i = strlen(haystack); i > 0; i--) {
         const char* ptr = &haystack[i - 1];
-        if (!strncmp(ptr, needle, needlesz)) {
+        if (!strncmp(ptr, needle, sz)) {
             return ptr;
         }
     }
