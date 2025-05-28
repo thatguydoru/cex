@@ -1,5 +1,5 @@
-#ifndef __CEX_CORE_H__
-#define __CEX_CORE_H__
+#ifndef __CEX_H__
+#define __CEX_H__
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -85,23 +85,23 @@
         size_t capacity; \
     }
 
-#define dynarray_with_capacity(T, arr, cap)                                \
-    {                                                                      \
-        arr.capacity = cap;                                                \
-        arr.size = 0;                                                      \
-        arr.items = malloc(sizeof(T) * cap);                               \
-        if (!arr.items) {                                                  \
-            panic("dynamic array allocation failed, may be out of memory") \
-        }                                                                  \
+#define dynarray_with_capacity(T, arr, cap)                                 \
+    {                                                                       \
+        arr.capacity = cap;                                                 \
+        arr.size = 0;                                                       \
+        arr.items = malloc(sizeof(T) * cap);                                \
+        if (!arr.items) {                                                   \
+            panic("dynamic array allocation failed, may be out of memory"); \
+        }                                                                   \
     }
 
 #define dynarray_default(T, arr) dynarray_with_capacity(T, arr, 8)
 
 #define dynarray_new(T, arr, src, sz)           \
-    {                                             \
-        dynarray_with_capacity(T, arr, sz);       \
+    {                                           \
+        dynarray_with_capacity(T, arr, sz);     \
         memcpy(arr.items, src, sz * sizeof(T)); \
-        arr.size = sz;                            \
+        arr.size = sz;                          \
     }
 
 #define dynarray_push(arr, item)                                                  \
@@ -155,17 +155,14 @@
 #define max(a, b) ((a) >= (b) ? (a) : (b))
 #define clamp(lo, hi, val) ((lo) > (val) ? (lo) : (hi) < (val) ? (hi) : (val))
 
-/////////// Stack-allocated Array Utilities ///////////
-
-#define arrsize(arr) (sizeof(arr) / sizeof(arr[0]))
-
-/////////// IO ///////////
+/////////// Logging ///////////
 
 #define eprintf(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
 #define eprintln(message) eprintf("%s", message)
 
-/////////// For LSP Warnings ///////////
+/////////// Extras ///////////
 
+#define arrsize(arr) (sizeof(arr) / sizeof(arr[0]))
 #define unused(x) (void)x;
 
 #endif
